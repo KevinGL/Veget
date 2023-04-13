@@ -32,19 +32,27 @@ struct Tree
     std::vector<GLuint> tex;
 };
 
+struct Circle
+{
+    std::vector<glm::vec3> points;
+};
+
 class Veget
 {
     private :
 
     std::vector<Tree> trees;
     std::vector<GLuint> textures;
+    const float PI = 3.1415926535897932384626433832795f;
 
     bool inPolygon(glm::vec3 point, std::vector<glm::vec3> polygon);
     std::vector<glm::vec3> getClosest3Points(glm::vec3 point, std::vector<glm::vec3> polygon);
     float getProjectionZ(glm::vec2 point, std::vector<glm::vec3> triangle);
-    void createTree(TREE_TYPE type, Tree *tree);
+    void createTree(TREE_TYPE type, const unsigned int resH, const unsigned int resV, Tree *tree);
+    void createSkeleton(TREE_TYPE type, const unsigned int resV, const float height, std::vector<glm::vec3> &skeleton);
+    void createTrunk(const float trunkRadius, const float ratioHeight, const unsigned int resH, const unsigned int resV, const float height, std::vector<glm::vec3> skeleton, Tree *tree);
 
     public :
 
-    void AddTreesInArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int precision);
+    void AddTreesInArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV);
 };

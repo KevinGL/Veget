@@ -1,6 +1,6 @@
 #include "veget.h"
 
-void Veget::AddTreesInArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int precision)
+void Veget::AddTreesInArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV)
 {
     std::cout << "Calcul random position of trees ..." << std::endl;
 
@@ -56,6 +56,8 @@ void Veget::AddTreesInArea(std::vector<glm::vec3> area, TREE_TYPE type, const un
 
     ////////////
 
+    const unsigned int precision = 100;
+
     const int xMinInt = precision * (int)xMin;
     const int xMaxInt = precision * (int)xMax;
     const int yMinInt = precision * (int)yMin;
@@ -100,10 +102,12 @@ void Veget::AddTreesInArea(std::vector<glm::vec3> area, TREE_TYPE type, const un
         trees.push_back(tree);
     }
 
+    std::cout << "Your trees are positionned :)" << std::endl << std::endl;
+
 
     for(size_t i=0; i<trees.size(); i++)
     {
-        createTree(type, &trees[i]);
+        createTree(type, resH, resV, &trees[i]);
     }
 }
 
@@ -237,7 +241,254 @@ float Veget::getProjectionZ(glm::vec2 point, std::vector<glm::vec3> triangle)
     return z0 + t * zV;
 }
 
-void Veget::createTree(TREE_TYPE type, Tree *tree)
+void Veget::createTree(TREE_TYPE type, const unsigned int resH, const unsigned int resV, Tree *tree)
 {
-    //
+    unsigned int heightMin, heightMax;
+    float trunkRadius, ratioHeight;
+
+    if(type == TREE_PINE)
+    {
+        heightMin = 15;
+        heightMax = 30;
+
+        trunkRadius = 0.5f;
+
+        ratioHeight = 0.5f;
+    }
+
+    const float height = (float)(rand()%(heightMax - heightMin + 1) + heightMin);
+
+    std::vector<glm::vec3> skeleton;
+
+    createSkeleton(type, resV, height, skeleton);
+
+    /*for(size_t i=0; i<skeleton.size(); i++)
+    {
+        std::cout << skeleton[i].x << " " << skeleton[i].y << " " << skeleton[i].z << std::endl;
+    }*/
+
+    createTrunk(trunkRadius, ratioHeight, resH, resV, height, skeleton, tree);
+}
+
+void Veget::createSkeleton(TREE_TYPE type, const unsigned int resV, const float height, std::vector<glm::vec3> &skeleton)
+{
+    const float lgSeg = height/resV;
+
+    skeleton.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
+
+    int deltaAngle;
+
+    if(type == TREE_PINE)
+    {
+        deltaAngle = 20;
+    }
+
+    for(size_t i=0; i<resV; i++)
+    {
+        glm::vec3 axeRot;
+        const float angleZ = (float)(rand() % 360);
+
+        axeRot.x = cos(angleZ * PI/180);
+        axeRot.y = sin(angleZ * PI/180);
+        axeRot.z = 0.0f;
+
+        const float angleX = (float)(rand() % (2 * deltaAngle + 1) - deltaAngle);
+
+        glm::mat4 matrixRot = glm::rotate(angleX, axeRot.x, axeRot.y, axeRot.z);
+
+        glm::vec4 segment = glm::vec4(0.0f, 0.0f, lgSeg, 1.0f);
+
+        segment = matrixRot * segment;
+
+        const size_t indexPrec = skeleton.size() - 1;
+
+        glm::vec3 suiv = skeleton[indexPrec] + glm::vec3(segment.x, segment.y, segment.z);
+
+        skeleton.push_back(suiv);
+    }
+}
+
+void Veget::createTrunk(const float trunkRadius, const float ratioHeight, const unsigned int resH, const unsigned int resV, const float height, std::vector<glm::vec3> skeleton, Tree *tree)
+{
+    const float paramExp = log(ratioHeight) / height;
+
+    std::vector<Circle> circles;
+
+    for(size_t i=0; i<skeleton.size(); i++)
+    {
+        Circle circle;
+
+        const float radius = trunkRadius * exp(paramExp * skeleton[i].z);
+        glm::vec3 center = skeleton[i];
+
+        float angle = 0.0f;
+        const float alpha = 360.0f / resH;
+
+        for(size_t j=0; j<resH; j++)
+        {
+            glm::vec3 point(radius * cos(angle * PI/180), radius * sin(angle * PI/180), 0.0f);
+
+            point += center;
+
+            circle.points.push_back(point);
+
+            angle += alpha;
+        }
+
+        circles.push_back(circle);
+    }
+
+    const float partTexH = 1.0f / resH;
+    const float partTexV = 1.0f / resV;
+
+    for(size_t i=0; i<circles.size()-1; i++)
+    {
+        for(size_t j=0; j<resH-1; j++)
+        {
+            glm::vec3 point = circles[i].points[j];
+
+            tree->coordVertex.push_back(point.x);
+            tree->coordVertex.push_back(point.y);
+            tree->coordVertex.push_back(point.z);
+
+            ////////////////////////////////////////////////
+
+            point = circles[i+1].points[j];
+
+            tree->coordVertex.push_back(point.x);
+            tree->coordVertex.push_back(point.y);
+            tree->coordVertex.push_back(point.z);
+
+            ////////////////////////////////////////////////
+
+            point = circles[i].points[j+1];
+
+            tree->coordVertex.push_back(point.x);
+            tree->coordVertex.push_back(point.y);
+            tree->coordVertex.push_back(point.z);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            point = circles[i].points[j+1];
+
+            tree->coordVertex.push_back(point.x);
+            tree->coordVertex.push_back(point.y);
+            tree->coordVertex.push_back(point.z);
+
+            ////////////////////////////////////////////////
+
+            point = circles[i+1].points[j];
+
+            tree->coordVertex.push_back(point.x);
+            tree->coordVertex.push_back(point.y);
+            tree->coordVertex.push_back(point.z);
+
+            ////////////////////////////////////////////////
+
+            point = circles[i+1].points[j+1];
+
+            tree->coordVertex.push_back(point.x);
+            tree->coordVertex.push_back(point.y);
+            tree->coordVertex.push_back(point.z);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            glm::vec2 coordTex = glm::vec2(j * partTexH, i * partTexV);
+
+            tree->coordTex.push_back(coordTex.x);
+            tree->coordTex.push_back(coordTex.y);
+
+            ////////////////////////////////////////////////
+
+            coordTex = glm::vec2(j * partTexH, (i+1) * partTexV);
+
+            tree->coordTex.push_back(coordTex.x);
+            tree->coordTex.push_back(coordTex.y);
+
+            ////////////////////////////////////////////////
+
+            coordTex = glm::vec2((j+1) * partTexH, i * partTexV);
+
+            tree->coordTex.push_back(coordTex.x);
+            tree->coordTex.push_back(coordTex.y);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            coordTex = glm::vec2((j+1) * partTexH, i * partTexV);
+
+            tree->coordTex.push_back(coordTex.x);
+            tree->coordTex.push_back(coordTex.y);
+
+            ////////////////////////////////////////////////
+
+            coordTex = glm::vec2(j * partTexH, (i+1) * partTexV);
+
+            tree->coordTex.push_back(coordTex.x);
+            tree->coordTex.push_back(coordTex.y);
+
+            ////////////////////////////////////////////////
+
+            coordTex = glm::vec2((j+1) * partTexH, (i+1) * partTexV);
+
+            tree->coordTex.push_back(coordTex.x);
+            tree->coordTex.push_back(coordTex.y);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            glm::vec3 normal = glm::normalize(circles[i].points[j] - skeleton[i]);
+
+            tree->normals.push_back(normal.x);
+            tree->normals.push_back(normal.y);
+            tree->normals.push_back(normal.z);
+
+            ////////////////////////////////////////////////
+
+            normal = glm::normalize(circles[i+1].points[j] - skeleton[i+1]);
+
+            tree->normals.push_back(normal.x);
+            tree->normals.push_back(normal.y);
+            tree->normals.push_back(normal.z);
+
+            ////////////////////////////////////////////////
+
+            normal = glm::normalize(circles[i].points[j+1] - skeleton[i]);
+
+            tree->normals.push_back(normal.x);
+            tree->normals.push_back(normal.y);
+            tree->normals.push_back(normal.z);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            normal = glm::normalize(circles[i].points[j+1] - skeleton[i]);
+
+            tree->normals.push_back(normal.x);
+            tree->normals.push_back(normal.y);
+            tree->normals.push_back(normal.z);
+
+            ////////////////////////////////////////////////
+
+            normal = glm::normalize(circles[i+1].points[j] - skeleton[i+1]);
+
+            tree->normals.push_back(normal.x);
+            tree->normals.push_back(normal.y);
+            tree->normals.push_back(normal.z);
+
+            ////////////////////////////////////////////////
+
+            normal = glm::normalize(circles[i+1].points[j+1] - skeleton[i+1]);
+
+            tree->normals.push_back(normal.x);
+            tree->normals.push_back(normal.y);
+            tree->normals.push_back(normal.z);
+        }
+    }
+
+    for(size_t i=0; i<tree->coordVertex.size()/3; i++)
+    {
+        tree->colors.push_back(1.0f);
+        tree->colors.push_back(1.0f);
+        tree->colors.push_back(1.0f);
+    }
 }
