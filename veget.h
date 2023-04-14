@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include "../glm/glm.hpp"
 #include "../glm/gtx/transform.hpp"
 #include "../glm/gtc/type_ptr.hpp"
@@ -44,6 +45,12 @@ struct Tree
     std::vector<GLuint> tex;
 };
 
+struct TreesArea
+{
+    std::vector<Tree> trees;
+    std::vector<glm::vec2> perimeter;
+};
+
 struct Veget_Circle
 {
     std::vector<glm::vec3> points;
@@ -61,7 +68,8 @@ class Veget
 {
     private :
 
-    std::vector<Tree> trees;
+    //std::vector<Tree> trees;
+    std::vector<TreesArea> treesAreas;
     std::vector<Veget_Tex> textures;
     std::vector<ParamsTrees> paramsTrees;
     const float PI = 3.1415926535897932384626433832795f;
@@ -79,5 +87,6 @@ class Veget
 
     public :
 
-    void AddTreesInArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV);
+    void AddTreesArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV);
+    void Draw(const GLuint shaderId, const glm::vec3 posCam);
 };
