@@ -1,7 +1,101 @@
+#include "../sdlglutils/sdlglutils.h"
 #include "veget.h"
+
+void Veget::Init()
+{
+    std::ifstream datas("../Mini-libs/veget/DataTrees.txt");
+
+    while(1)
+    {
+        std::string line;
+
+        if(!getline(datas, line))
+        {
+            break;
+        }
+
+        ParamsTrees p;
+
+        char type[line.length()];
+        char pathTex[line.length()];
+
+        sscanf(line.c_str(), "%s : heightMin=%d | heightMax=%d | trunkRadius=%f | ratioHeight=%f | coefTex=%f | tex=%s\n",
+               type,
+               &p.heightMin,
+               &p.heightMax,
+               &p.trunkRadius,
+               &p.ratioHeight,
+               &p.coefTex,
+               pathTex);
+
+        if(std::string(type) == "TREE_PINE")
+        {
+            p.type = TREE_PINE;
+        }
+        else
+        if(std::string(type) == "TREE_OAK")
+        {
+            p.type = TREE_OAK;
+        }
+        else
+        if(std::string(type) == "TREE_PLANE")
+        {
+            p.type = TREE_PLANE;
+        }
+        else
+        if(std::string(type) == "TREE_CYPRESS")
+        {
+            p.type = TREE_CYPRESS;
+        }
+        else
+        if(std::string(type) == "TREE_FIR")
+        {
+            p.type = TREE_FIR;
+        }
+        else
+        if(std::string(type) == "TREE_OLIV")
+        {
+            p.type = TREE_OLIV;
+        }
+        else
+        if(std::string(type) == "TREE_FIG")
+        {
+            p.type = TREE_FIG;
+        }
+        else
+        if(std::string(type) == "TREE_POPLAR")
+        {
+            p.type = TREE_POPLAR;
+        }
+
+        paramsTrees.push_back(p);
+
+        std::string barkPath = "../Mini-libs/veget/Textures/" + std::string(pathTex) + "/Bark.png";
+        std::string barkNormalPath = "../Mini-libs/veget/Textures/" + std::string(pathTex) + "/Bark_normals.png";
+        std::string branchPath = "../Mini-libs/veget/Textures/" + std::string(pathTex) + "/Branch.png";
+
+        Veget_Tex vt;
+
+        vt.treeType = p.type;
+        vt.barkTex = loadTexture(barkPath.c_str(), 1);
+        vt.barkNormalTex = loadTexture(barkNormalPath.c_str(), 1);
+        vt.branchTex = loadTexture(branchPath.c_str(), 1);
+
+        textures.push_back(vt);
+    }
+
+    datas.close();
+
+    isInitialized = true;
+}
 
 void Veget::AddTreesInArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV)
 {
+    if(!isInitialized)
+    {
+        Init();
+    }
+
     std::cout << "Calcul random position of trees ..." << std::endl;
 
     float xMoy = 0.0f, yMoy = 0.0f;
@@ -241,22 +335,33 @@ float Veget::getProjectionZ(glm::vec2 point, std::vector<glm::vec3> triangle)
     return z0 + t * zV;
 }
 
+ParamsTrees Veget::getParamsTree(TREE_TYPE type)
+{
+    for(size_t i=0; i<paramsTrees.size(); i++)
+    {
+        if(paramsTrees[i].type == type)
+        {
+            return paramsTrees[i];
+        }
+    }
+}
+
+Veget_Tex Veget::getVegetTex(TREE_TYPE type)
+{
+    for(size_t i=0; i<textures.size(); i++)
+    {
+        if(textures[i].treeType == type)
+        {
+            return textures[i];
+        }
+    }
+}
+
 void Veget::createTree(TREE_TYPE type, const unsigned int resH, const unsigned int resV, Tree *tree)
 {
-    unsigned int heightMin, heightMax;
-    float trunkRadius, ratioHeight;
+    ParamsTrees params = getParamsTree(type);
 
-    if(type == TREE_PINE)
-    {
-        heightMin = 15;
-        heightMax = 30;
-
-        trunkRadius = 0.5f;
-
-        ratioHeight = 0.5f;
-    }
-
-    const float height = (float)(rand()%(heightMax - heightMin + 1) + heightMin);
+    const float height = (float)(rand()%(params.heightMax - params.heightMin + 1) + params.heightMin);
 
     std::vector<glm::vec3> skeleton;
 
@@ -267,7 +372,13 @@ void Veget::createTree(TREE_TYPE type, const unsigned int resH, const unsigned i
         std::cout << skeleton[i].x << " " << skeleton[i].y << " " << skeleton[i].z << std::endl;
     }*/
 
-    createTrunk(trunkRadius, ratioHeight, resH, resV, height, skeleton, tree);
+    createTrunk(params.trunkRadius, params.ratioHeight, resH, resV, height, params.coefTex, skeleton, tree);
+
+    Veget_Tex vt = getVegetTex(type);
+
+    tree->tex.push_back(vt.barkTex);
+    tree->tex.push_back(vt.barkNormalTex);
+    tree->tex.push_back(vt.branchTex);
 }
 
 void Veget::createSkeleton(TREE_TYPE type, const unsigned int resV, const float height, std::vector<glm::vec3> &skeleton)
@@ -308,15 +419,15 @@ void Veget::createSkeleton(TREE_TYPE type, const unsigned int resV, const float 
     }
 }
 
-void Veget::createTrunk(const float trunkRadius, const float ratioHeight, const unsigned int resH, const unsigned int resV, const float height, std::vector<glm::vec3> skeleton, Tree *tree)
+void Veget::createTrunk(const float trunkRadius, const float ratioHeight, const unsigned int resH, const unsigned int resV, const float height, const float multiTex, std::vector<glm::vec3> skeleton, Tree *tree)
 {
     const float paramExp = log(ratioHeight) / height;
 
-    std::vector<Circle> circles;
+    std::vector<Veget_Circle> circles;
 
     for(size_t i=0; i<skeleton.size(); i++)
     {
-        Circle circle;
+        Veget_Circle circle;
 
         const float radius = trunkRadius * exp(paramExp * skeleton[i].z);
         glm::vec3 center = skeleton[i];
@@ -339,7 +450,7 @@ void Veget::createTrunk(const float trunkRadius, const float ratioHeight, const 
     }
 
     const float partTexH = 1.0f / resH;
-    const float partTexV = 1.0f / resV;
+    const float partTexV = multiTex / resV;
 
     for(size_t i=0; i<circles.size()-1; i++)
     {
@@ -347,49 +458,49 @@ void Veget::createTrunk(const float trunkRadius, const float ratioHeight, const 
         {
             glm::vec3 point = circles[i].points[j];
 
-            tree->coordVertex.push_back(point.x);
-            tree->coordVertex.push_back(point.y);
-            tree->coordVertex.push_back(point.z);
+            tree->coordVertex.push_back(point.x + tree->pos.x);
+            tree->coordVertex.push_back(point.y + tree->pos.y);
+            tree->coordVertex.push_back(point.z + tree->pos.z);
 
             ////////////////////////////////////////////////
 
             point = circles[i+1].points[j];
 
-            tree->coordVertex.push_back(point.x);
-            tree->coordVertex.push_back(point.y);
-            tree->coordVertex.push_back(point.z);
+            tree->coordVertex.push_back(point.x + tree->pos.x);
+            tree->coordVertex.push_back(point.y + tree->pos.y);
+            tree->coordVertex.push_back(point.z + tree->pos.z);
 
             ////////////////////////////////////////////////
 
             point = circles[i].points[j+1];
 
-            tree->coordVertex.push_back(point.x);
-            tree->coordVertex.push_back(point.y);
-            tree->coordVertex.push_back(point.z);
+            tree->coordVertex.push_back(point.x + tree->pos.x);
+            tree->coordVertex.push_back(point.y + tree->pos.y);
+            tree->coordVertex.push_back(point.z + tree->pos.z);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
 
             point = circles[i].points[j+1];
 
-            tree->coordVertex.push_back(point.x);
-            tree->coordVertex.push_back(point.y);
-            tree->coordVertex.push_back(point.z);
+            tree->coordVertex.push_back(point.x + tree->pos.x);
+            tree->coordVertex.push_back(point.y + tree->pos.y);
+            tree->coordVertex.push_back(point.z + tree->pos.z);
 
             ////////////////////////////////////////////////
 
             point = circles[i+1].points[j];
 
-            tree->coordVertex.push_back(point.x);
-            tree->coordVertex.push_back(point.y);
-            tree->coordVertex.push_back(point.z);
+            tree->coordVertex.push_back(point.x + tree->pos.x);
+            tree->coordVertex.push_back(point.y + tree->pos.y);
+            tree->coordVertex.push_back(point.z + tree->pos.z);
 
             ////////////////////////////////////////////////
 
             point = circles[i+1].points[j+1];
 
-            tree->coordVertex.push_back(point.x);
-            tree->coordVertex.push_back(point.y);
-            tree->coordVertex.push_back(point.z);
+            tree->coordVertex.push_back(point.x + tree->pos.x);
+            tree->coordVertex.push_back(point.y + tree->pos.y);
+            tree->coordVertex.push_back(point.z + tree->pos.z);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -490,5 +601,10 @@ void Veget::createTrunk(const float trunkRadius, const float ratioHeight, const 
         tree->colors.push_back(1.0f);
         tree->colors.push_back(1.0f);
         tree->colors.push_back(1.0f);
+    }
+
+    for(size_t i=0; i<tree->coordVertex.size()/3; i++)
+    {
+        tree->numtex.push_back(0);      //Bark
     }
 }
