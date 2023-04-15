@@ -19,13 +19,14 @@ void Veget::Init()
         char type[line.length()];
         char pathTex[line.length()];
 
-        sscanf(line.c_str(), "%s : heightMin=%d | heightMax=%d | trunkRadius=%f | ratioHeight=%f | coefTex=%f | tex=%s\n",
+        sscanf(line.c_str(), "%s : heightMin=%d | heightMax=%d | trunkRadius=%f | ratioHeight=%f | coefTex=%f | deltaAngle=%d | tex=%s\n",
                type,
                &p.heightMin,
                &p.heightMax,
                &p.trunkRadius,
                &p.ratioHeight,
                &p.coefTex,
+               &p.deltaAngle,
                pathTex);
 
         if(std::string(type) == "TREE_PINE")
@@ -89,11 +90,16 @@ void Veget::Init()
     isInitialized = true;
 }
 
-void Veget::AddTreesArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV)
+void Veget::AddTreesArea(std::vector<glm::vec3> area, std::vector<TREE_TYPE> types, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV)
 {
     if(!isInitialized)
     {
         Init();
+    }
+
+    if(types.size() == 0)
+    {
+        std::cout << "You have not indicated types of trees, aborting" << std::endl;
     }
 
     std::cout << "Calcul random position of trees ..." << std::endl;
@@ -203,6 +209,10 @@ void Veget::AddTreesArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsi
 
     for(size_t i=0; i<ta.trees.size(); i++)
     {
+        size_t indexType = rand() % types.size();
+
+        TREE_TYPE type = types[indexType];
+
         createTree(type, resH, resV, &ta.trees[i]);
     }
 
@@ -435,16 +445,11 @@ void Veget::createTree(TREE_TYPE type, const unsigned int resH, const unsigned i
 
 void Veget::createSkeleton(TREE_TYPE type, const unsigned int resV, const float height, std::vector<glm::vec3> &skeleton)
 {
+    ParamsTrees params = getParamsTree(type);
+
     const float lgSeg = height/resV;
 
     skeleton.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
-
-    int deltaAngle;
-
-    if(type == TREE_PINE)
-    {
-        deltaAngle = 20;
-    }
 
     for(size_t i=0; i<resV; i++)
     {
@@ -455,7 +460,7 @@ void Veget::createSkeleton(TREE_TYPE type, const unsigned int resV, const float 
         axeRot.y = sin(angleZ * PI/180);
         axeRot.z = 0.0f;
 
-        const float angleX = (float)(rand() % (2 * deltaAngle + 1) - deltaAngle);
+        const float angleX = (float)(rand() % (2 * params.deltaAngle + 1) - params.deltaAngle);
 
         glm::mat4 matrixRot = glm::rotate(angleX, axeRot.x, axeRot.y, axeRot.z);
 

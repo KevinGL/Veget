@@ -30,6 +30,7 @@ struct ParamsTrees
     float trunkRadius;
     float ratioHeight;
     float coefTex;
+    int deltaAngle;
 };
 
 struct Tree
@@ -43,6 +44,7 @@ struct Tree
     GLuint VAO;
     glm::vec3 pos;
     std::vector<GLuint> tex;
+    glm::vec3 boundingBox[8];
 };
 
 struct TreesArea
@@ -50,6 +52,7 @@ struct TreesArea
     std::vector<Tree> trees;
     std::vector<glm::vec2> perimeter;
     glm::vec2 pos;
+    glm::vec3 boundingBox[8];
 };
 
 struct Veget_Circle
@@ -88,7 +91,7 @@ class Veget
 
     public :
 
-    void AddTreesArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV);
+    void AddTreesArea(std::vector<glm::vec3> area, std::vector<TREE_TYPE> types, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV);
     void Draw(const GLuint shaderId, const glm::vec3 posCam);
     void DrawByArea(const GLuint shaderId, const glm::vec3 posCam, const size_t indexArea);
 
