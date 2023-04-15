@@ -211,6 +211,15 @@ void Veget::AddTreesArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsi
         ta.perimeter.push_back(glm::vec2(area[i].x, area[i].y));
     }
 
+    ta.pos = glm::vec2(0.0f);
+
+    for(size_t i=0; i<ta.perimeter.size(); i++)
+    {
+        ta.pos += ta.perimeter[i];
+    }
+
+    ta.pos /= ta.perimeter.size();
+
     treesAreas.push_back(ta);
 }
 
@@ -697,12 +706,68 @@ void Veget::Draw(const GLuint shaderId, const glm::vec3 posCam)
                         glUniform1i(glGetUniformLocation(shaderId, local.c_str()), k);
                     }
 
+                    if(treesAreas[i].trees[j].tex[1] != 0)
+                    {
+                        glUniform1i(glGetUniformLocation(shaderId, "normal_map"), 1);
+                    }
+                    else
+                    {
+                        glUniform1i(glGetUniformLocation(shaderId, "normal_map"), 0);
+                    }
+
                     glBindVertexArray(treesAreas[i].trees[j].VAO);
 
                     glDrawArrays(GL_TRIANGLES, 0, treesAreas[i].trees[j].coordVertex.size()/3);
 
                     glBindVertexArray(0);
                 }
+            }
+        }
+    }
+}
+
+void Veget::DrawByArea(const GLuint shaderId, const glm::vec3 posCam, const size_t indexArea)
+{
+    //
+
+    //FRUSTUM CULLING ZONE A AJOUTER
+
+    //if(...)
+    {
+        for(size_t i=0; i<treesAreas[indexArea].trees.size(); i++)
+        {
+            //FRUSTUM CULLING ZONE A AJOUTER
+
+            //if(...)
+            {
+                for(size_t j=0; j<treesAreas[indexArea].trees[i].tex.size(); j++)
+                {
+                    glActiveTexture(GL_TEXTURE0 + j);
+                    glBindTexture(GL_TEXTURE_2D, treesAreas[indexArea].trees[i].tex[j]);
+
+                    std::ostringstream os;
+
+                    os << j;
+
+                    std::string local = "tex[" + os.str() + "]";
+
+                    glUniform1i(glGetUniformLocation(shaderId, local.c_str()), j);
+                }
+
+                if(treesAreas[indexArea].trees[i].tex[1] != 0)
+                {
+                    glUniform1i(glGetUniformLocation(shaderId, "normal_map"), 1);
+                }
+                else
+                {
+                    glUniform1i(glGetUniformLocation(shaderId, "normal_map"), 0);
+                }
+
+                glBindVertexArray(treesAreas[indexArea].trees[i].VAO);
+
+                glDrawArrays(GL_TRIANGLES, 0, treesAreas[indexArea].trees[i].coordVertex.size()/3);
+
+                glBindVertexArray(0);
             }
         }
     }

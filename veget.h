@@ -49,6 +49,7 @@ struct TreesArea
 {
     std::vector<Tree> trees;
     std::vector<glm::vec2> perimeter;
+    glm::vec2 pos;
 };
 
 struct Veget_Circle
@@ -89,4 +90,15 @@ class Veget
 
     void AddTreesArea(std::vector<glm::vec3> area, TREE_TYPE type, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV);
     void Draw(const GLuint shaderId, const glm::vec3 posCam);
+    void DrawByArea(const GLuint shaderId, const glm::vec3 posCam, const size_t indexArea);
+
+    size_t getNbAreas()
+    {
+        return treesAreas.size();
+    }
+
+    glm::vec2 getAreaPos(const size_t index)
+    {
+        return treesAreas[index].pos;
+    }
 };

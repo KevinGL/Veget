@@ -1,1 +1,1 @@
-TREE_PINE : heightMin=15 | heightMax=30 | trunkRadius=0.5 | ratioHeight=0.5 | coefTex=3 | tex=Pine
+TREE_PINE : heightMin=15 | heightMax=30 | trunkRadius=1 | ratioHeight=0.5 | coefTex=3 | tex=Pine
