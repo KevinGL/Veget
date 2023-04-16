@@ -90,7 +90,7 @@ void Veget::Init()
     isInitialized = true;
 }
 
-void Veget::AddTreesArea(std::vector<glm::vec3> area, std::vector<TREE_TYPE> types, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV)
+void Veget::AddTreesGroup(std::vector<glm::vec3> area, std::vector<TREE_TYPE> types, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV)
 {
     if(!isInitialized)
     {
@@ -185,52 +185,52 @@ void Veget::AddTreesArea(std::vector<glm::vec3> area, std::vector<TREE_TYPE> typ
         }
     }
 
-    TreesArea ta;
+    TreesGroup tg;
 
     for(size_t i=0; i<pointsInPoly.size(); i++)
     {
         std::vector<glm::vec3> triangleOfThisPoint = getClosest3Points(pointsInPoly[i], area);
 
-        //std::cout << pointsInPoly[i].x << " " << pointsInPoly[i].y << " => (" << triangleOfThisPoint[0].x << " " << triangleOfThisPoint[0].y << ") (" << triangleOfThisPoint[1].x << " " << triangleOfThisPoint[1].y << ") (" << triangleOfThisPoint[2].x << " " << triangleOfThisPoint[2].y << ")" << std::endl;
+        //std::cout << i << " : " << pointsInPoly[i].x << " " << pointsInPoly[i].y << " => (" << triangleOfThisPoint[0].x << " " << triangleOfThisPoint[0].y << ") (" << triangleOfThisPoint[1].x << " " << triangleOfThisPoint[1].y << ") (" << triangleOfThisPoint[2].x << " " << triangleOfThisPoint[2].y << ") => ";
 
         const float Z = getProjectionZ(glm::vec2(pointsInPoly[i].x, pointsInPoly[i].y), triangleOfThisPoint);
 
-        //std::cout << pointsInPoly[i].x << " " << pointsInPoly[i].y << " " << Z << std::endl;
+        //std::cout << Z << std::endl;
 
         Tree tree;
 
         tree.pos = glm::vec3(pointsInPoly[i].x, pointsInPoly[i].y, Z);
 
-        ta.trees.push_back(tree);
+        tg.trees.push_back(tree);
     }
 
     std::cout << "Your trees are positionned :)" << std::endl << std::endl;
 
 
-    for(size_t i=0; i<ta.trees.size(); i++)
+    for(size_t i=0; i<tg.trees.size(); i++)
     {
         size_t indexType = rand() % types.size();
 
         TREE_TYPE type = types[indexType];
 
-        createTree(type, resH, resV, &ta.trees[i]);
+        createTree(type, resH, resV, &tg.trees[i]);
     }
 
     for(size_t i=0; i<area.size(); i++)
     {
-        ta.perimeter.push_back(glm::vec2(area[i].x, area[i].y));
+        tg.perimeter.push_back(glm::vec2(area[i].x, area[i].y));
     }
 
-    ta.pos = glm::vec2(0.0f);
+    tg.pos = glm::vec2(0.0f);
 
-    for(size_t i=0; i<ta.perimeter.size(); i++)
+    for(size_t i=0; i<tg.perimeter.size(); i++)
     {
-        ta.pos += ta.perimeter[i];
+        tg.pos += tg.perimeter[i];
     }
 
-    ta.pos /= ta.perimeter.size();
+    tg.pos /= tg.perimeter.size();
 
-    treesAreas.push_back(ta);
+    treesGroups.push_back(tg);
 }
 
 bool Veget::inPolygon(glm::vec3 point, std::vector<glm::vec3> polygon)
@@ -320,6 +320,8 @@ std::vector<glm::vec3> Veget::getClosest3Points(glm::vec3 point, std::vector<glm
 
     result.push_back(polygon[second]);
 
+    glm::vec2 test = glm::vec2(polygon[second].x, polygon[second].y) - glm::vec2(polygon[first].x, polygon[first].y);
+
     distMin = 1000000000000.0f;
     unsigned int third;
 
@@ -327,7 +329,9 @@ std::vector<glm::vec3> Veget::getClosest3Points(glm::vec3 point, std::vector<glm
     {
         const float dist = sqrt(pow(polygon[i].x - point.x, 2) + pow(polygon[i].y - point.y, 2));
 
-        if(distMin > dist && i != first && i != second)
+        glm::vec2 test2 = glm::vec2(polygon[i].x, polygon[i].y) - glm::vec2(polygon[first].x, polygon[first].y);
+
+        if(distMin > dist && i != first && i != second && glm::dot(test, test2) > -1.0f && glm::dot(test, test2) < 1.0f)
         {
             distMin = dist;
             third = i;
@@ -674,33 +678,86 @@ void Veget::createTrunk(const float trunkRadius, const float ratioHeight, const 
     }
 }
 
+void Veget::AddTreesPositions(std::vector<glm::vec3> positions, std::vector<TREE_TYPE> types, const unsigned int resH, const unsigned int resV)
+{
+    if(!isInitialized)
+    {
+        Init();
+    }
+
+    if(types.size() == 0)
+    {
+        std::cout << "You have not indicated types of trees, aborting" << std::endl;
+    }
+
+    std::cout << "Add of trees ..." << std::endl;
+
+    TreesGroup tg;
+
+    for(size_t i=0; i<positions.size(); i++)
+    {
+        Tree tree;
+
+        tree.pos = positions[i];
+
+        tg.trees.push_back(tree);
+    }
+
+    std::cout << "Your trees are positionned :)" << std::endl << std::endl;
+
+    for(size_t i=0; i<tg.trees.size(); i++)
+    {
+        size_t indexType = rand() % types.size();
+
+        TREE_TYPE type = types[indexType];
+
+        createTree(type, resH, resV, &tg.trees[i]);
+    }
+
+    for(size_t i=0; i<positions.size(); i++)
+    {
+        tg.perimeter.push_back(glm::vec2(positions[i].x, positions[i].y));
+    }
+
+    tg.pos = glm::vec2(0.0f);
+
+    for(size_t i=0; i<tg.perimeter.size(); i++)
+    {
+        tg.pos += tg.perimeter[i];
+    }
+
+    tg.pos /= tg.perimeter.size();
+
+    treesGroups.push_back(tg);
+}
+
 void Veget::Draw(const GLuint shaderId, const glm::vec3 posCam)
 {
-    for(size_t i=0; i<treesAreas.size(); i++)
+    for(size_t i=0; i<treesGroups.size(); i++)
     {
         glm::vec2 areaPos = glm::vec2(0.0f, 0.0f);
 
-        for(size_t j=0; j<treesAreas[i].perimeter.size(); j++)
+        for(size_t j=0; j<treesGroups[i].perimeter.size(); j++)
         {
-            areaPos += treesAreas[i].perimeter[j];
+            areaPos += treesGroups[i].perimeter[j];
         }
 
-        areaPos /= treesAreas[i].perimeter.size();
+        areaPos /= treesGroups[i].perimeter.size();
 
         //FRUSTUM CULLING ZONE A AJOUTER
 
         //if(...)
         {
-            for(size_t j=0; j<treesAreas[i].trees.size(); j++)
+            for(size_t j=0; j<treesGroups[i].trees.size(); j++)
             {
                 //FRUSTUM CULLING ZONE A AJOUTER
 
                 //if(...)
                 {
-                    for(size_t k=0; k<treesAreas[i].trees[j].tex.size(); k++)
+                    for(size_t k=0; k<treesGroups[i].trees[j].tex.size(); k++)
                     {
                         glActiveTexture(GL_TEXTURE0 + k);
-                        glBindTexture(GL_TEXTURE_2D, treesAreas[i].trees[j].tex[k]);
+                        glBindTexture(GL_TEXTURE_2D, treesGroups[i].trees[j].tex[k]);
 
                         std::ostringstream os;
 
@@ -711,7 +768,7 @@ void Veget::Draw(const GLuint shaderId, const glm::vec3 posCam)
                         glUniform1i(glGetUniformLocation(shaderId, local.c_str()), k);
                     }
 
-                    if(treesAreas[i].trees[j].tex[1] != 0)
+                    if(treesGroups[i].trees[j].tex[1] != 0)
                     {
                         glUniform1i(glGetUniformLocation(shaderId, "normal_map"), 1);
                     }
@@ -720,9 +777,9 @@ void Veget::Draw(const GLuint shaderId, const glm::vec3 posCam)
                         glUniform1i(glGetUniformLocation(shaderId, "normal_map"), 0);
                     }
 
-                    glBindVertexArray(treesAreas[i].trees[j].VAO);
+                    glBindVertexArray(treesGroups[i].trees[j].VAO);
 
-                    glDrawArrays(GL_TRIANGLES, 0, treesAreas[i].trees[j].coordVertex.size()/3);
+                    glDrawArrays(GL_TRIANGLES, 0, treesGroups[i].trees[j].coordVertex.size()/3);
 
                     glBindVertexArray(0);
                 }
@@ -731,7 +788,7 @@ void Veget::Draw(const GLuint shaderId, const glm::vec3 posCam)
     }
 }
 
-void Veget::DrawByArea(const GLuint shaderId, const glm::vec3 posCam, const size_t indexArea)
+void Veget::DrawByGroup(const GLuint shaderId, const glm::vec3 posCam, const size_t indexGroup)
 {
     //
 
@@ -739,16 +796,16 @@ void Veget::DrawByArea(const GLuint shaderId, const glm::vec3 posCam, const size
 
     //if(...)
     {
-        for(size_t i=0; i<treesAreas[indexArea].trees.size(); i++)
+        for(size_t i=0; i<treesGroups[indexGroup].trees.size(); i++)
         {
             //FRUSTUM CULLING ZONE A AJOUTER
 
             //if(...)
             {
-                for(size_t j=0; j<treesAreas[indexArea].trees[i].tex.size(); j++)
+                for(size_t j=0; j<treesGroups[indexGroup].trees[i].tex.size(); j++)
                 {
                     glActiveTexture(GL_TEXTURE0 + j);
-                    glBindTexture(GL_TEXTURE_2D, treesAreas[indexArea].trees[i].tex[j]);
+                    glBindTexture(GL_TEXTURE_2D, treesGroups[indexGroup].trees[i].tex[j]);
 
                     std::ostringstream os;
 
@@ -759,7 +816,7 @@ void Veget::DrawByArea(const GLuint shaderId, const glm::vec3 posCam, const size
                     glUniform1i(glGetUniformLocation(shaderId, local.c_str()), j);
                 }
 
-                if(treesAreas[indexArea].trees[i].tex[1] != 0)
+                if(treesGroups[indexGroup].trees[i].tex[1] != 0)
                 {
                     glUniform1i(glGetUniformLocation(shaderId, "normal_map"), 1);
                 }
@@ -768,9 +825,9 @@ void Veget::DrawByArea(const GLuint shaderId, const glm::vec3 posCam, const size
                     glUniform1i(glGetUniformLocation(shaderId, "normal_map"), 0);
                 }
 
-                glBindVertexArray(treesAreas[indexArea].trees[i].VAO);
+                glBindVertexArray(treesGroups[indexGroup].trees[i].VAO);
 
-                glDrawArrays(GL_TRIANGLES, 0, treesAreas[indexArea].trees[i].coordVertex.size()/3);
+                glDrawArrays(GL_TRIANGLES, 0, treesGroups[indexGroup].trees[i].coordVertex.size()/3);
 
                 glBindVertexArray(0);
             }

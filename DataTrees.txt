@@ -1,2 +1,2 @@
-TREE_PINE : heightMin=15 | heightMax=30 | trunkRadius=1 | ratioHeight=0.25 | coefTex=3 | deltaAngle=20 | tex=Pine
-TREE_OAK : heightMin=15 | heightMax=20 | trunkRadius=1.5 | ratioHeight=0.25 | coefTex=3 | deltaAngle=20 | tex=Oak
+TREE_PINE : heightMin=15 | heightMax=30 | trunkRadius=0.5 | ratioHeight=0.25 | coefTex=3 | deltaAngle=20 | tex=Pine
+TREE_OAK : heightMin=15 | heightMax=20 | trunkRadius=0.5 | ratioHeight=0.25 | coefTex=6 | deltaAngle=20 | tex=Oak

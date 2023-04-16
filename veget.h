@@ -47,7 +47,7 @@ struct Tree
     glm::vec3 boundingBox[8];
 };
 
-struct TreesArea
+struct TreesGroup
 {
     std::vector<Tree> trees;
     std::vector<glm::vec2> perimeter;
@@ -73,7 +73,7 @@ class Veget
     private :
 
     //std::vector<Tree> trees;
-    std::vector<TreesArea> treesAreas;
+    std::vector<TreesGroup> treesGroups;
     std::vector<Veget_Tex> textures;
     std::vector<ParamsTrees> paramsTrees;
     const float PI = 3.1415926535897932384626433832795f;
@@ -91,17 +91,18 @@ class Veget
 
     public :
 
-    void AddTreesArea(std::vector<glm::vec3> area, std::vector<TREE_TYPE> types, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV);
+    void AddTreesGroup(std::vector<glm::vec3> area, std::vector<TREE_TYPE> types, const unsigned int nbTrees, const unsigned int resH, const unsigned int resV);
+    void AddTreesPositions(std::vector<glm::vec3> positions, std::vector<TREE_TYPE> types, const unsigned int resH, const unsigned int resV);
     void Draw(const GLuint shaderId, const glm::vec3 posCam);
-    void DrawByArea(const GLuint shaderId, const glm::vec3 posCam, const size_t indexArea);
+    void DrawByGroup(const GLuint shaderId, const glm::vec3 posCam, const size_t indexArea);
 
-    size_t getNbAreas()
+    size_t getNbGroups()
     {
-        return treesAreas.size();
+        return treesGroups.size();
     }
 
-    glm::vec2 getAreaPos(const size_t index)
+    glm::vec2 getGroupPos(const size_t index)
     {
-        return treesAreas[index].pos;
+        return treesGroups[index].pos;
     }
 };
