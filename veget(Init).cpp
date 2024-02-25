@@ -1,17 +1,19 @@
 #include <dirent.h>
+#include <conio.h>
+#include <SDL2/SDL_image.h>
 #include "../sdlglutils/sdlglutils.h"
 #include "veget.h"
 
-namespace Trees
+namespace Veget
 {
-    void TreesGenerator::Init()
+    void VegetGenerator::Init()
     {
         //
 
         LoadTextures();
     }
 
-    void TreesGenerator::Finalize()
+    void VegetGenerator::Finalize()
     {
         glGenVertexArrays(1, &vb.VAO);
         glGenBuffers(1, &vb.VBO);
@@ -48,7 +50,7 @@ namespace Trees
         nbVerticesByTree = res * 6 * nbSeg;
     }
 
-    void TreesGenerator::LoadTextures()
+    void VegetGenerator::LoadTextures()
     {
         DIR *dir = opendir("../Mini-libs/veget/Textures/");
 
@@ -64,72 +66,46 @@ namespace Trees
             const std::string name = std::string(element->d_name);
             const std::string path = "../Mini-libs/veget/Textures/" + name;
 
-            if(!isFile(path) && name != "." && name != "..")
+            if(name.find(".png") != std::string::npos)
             {
-                Texture tex;
+                GLuint tex;
 
-                std::string path2 = path + "/Bark.png";
+                tex = loadTexture(path.c_str(), 1);
 
-                tex.specie = name;
+                std::string specie = name;
+                specie.erase(specie.rfind("."));
 
-                tex.bark = loadTexture(path2.c_str(), 1);
-
-                path2 = path + "/Bark_normals.png";
-                tex.barkNormal = loadTexture(path2.c_str(), 1);
-
-                path2 = path + "/Branch.png";
-                tex.branch = loadTexture(path2.c_str(), 1);
-
-                vb.textures.push_back(tex);
+                textures[specie] = tex;
             }
         }
 
         closedir(dir);
     }
 
-    size_t TreesGenerator::getIndexTex(const std::string specie, const std::string part)
+    int VegetGenerator::getIndexTexture(const std::string specie)
     {
-        size_t res = 0;
-
-        for(size_t i=0; i<vb.textures.size(); i++)
+        for(size_t i = 0 ; i < vb.textures.size() ; i++)
         {
-            if(vb.textures[i].specie == specie)
+            if(specie == vb.textures[i].specie)
             {
-                if(part == "bark")
-                {
-                    res = 3 * i;
-                }
-
-                else
-                if(part == "barkNorm")
-                {
-                    res = 3 * i + 1;
-                }
-
-                else
-                if(part == "branch")
-                {
-                    res = 3 * i + 2;
-                }
-
-                break;
+                return i;
             }
         }
 
-        return res;
+        return -1;
     }
 
-    void TreesGenerator::createTrunk(Tree tree)
+    void VegetGenerator::createTrunk(Plant plant)
     {
         float height, trunkDiameter, ratioTopBottom;
         std::string specie;
 
-        if(tree.type == TREE_PINE)
+        if(plant.type == VEGET_SCOTS_PINE)
         {
-            height = rand() % (30 - 6 + 1) + 6;
-            trunkDiameter = (rand() % (80 - 50 + 1) + 50) / 100.0f;
+            height = rand() % (20 - 6 + 1) + 6;
+            trunkDiameter = (rand() % (200 - 80 + 1) + 80) / 100.0f;
             ratioTopBottom = 0.5;
-            specie = "Pine";
+            specie = "Scots_Pine";
         }
 
         const float bottomDiameter = trunkDiameter;
@@ -138,23 +114,23 @@ namespace Trees
 
         std::vector<Circle> circles;
 
-        for(size_t i=0; i<nbSeg+1; i++)
+        for(size_t i=0 ; i < nbSeg+1 ; i++)
         {
             const float coef = (topDiameter - bottomDiameter) / (nbSeg+1);
             const float diameter = coef * i + bottomDiameter;
             const float radius = diameter / 2;
             glm::vec3 center;
 
-            center.x = tree.pos.x + (rand() % (50 - 10 + 1) + 10) / 100.0f;
-            center.y = tree.pos.y + (rand() % (50 - 10 + 1) + 10) / 100.0f;
-            center.z = tree.pos.z + i * segHeight;
+            center.x = plant.pos.x + (rand() % (50 - 10 + 1) + 10) / 100.0f;
+            center.y = plant.pos.y + (rand() % (50 - 10 + 1) + 10) / 100.0f;
+            center.z = plant.pos.z + i * segHeight;
 
             Circle c;
 
             const float alpha = 360.0f / res;
             float angle = 0.0f;
 
-            for(size_t j=0; j<res; j++)
+            for(size_t j = 0 ; j < res ; j++)
             {
                 glm::vec3 v;
 
@@ -170,7 +146,7 @@ namespace Trees
             circles.push_back(c);
         }
 
-        for(size_t i=0; i<circles.size()-1; i++)
+        for(size_t i = 0 ; i < circles.size()-1 ; i++)
         {
             glm::vec3 center1 = glm::vec3(0.0f);
             glm::vec3 center2 = glm::vec3(0.0f);
@@ -187,7 +163,10 @@ namespace Trees
             }
             center2 /= res;
 
-            for(size_t j=0; j<res; j++)
+            const float deltaTex = 0.4f / res;
+            float coordTex = 0.05f;
+
+            for(size_t j = 0 ; j < res ; j++)
             {
                 const size_t index1 = j;
                 size_t index2;
@@ -229,70 +208,80 @@ namespace Trees
 
                 ///////////////////////////////////////////////////////////////
 
-                vb.coordTex.push_back((float)index1 / res);
+                vb.coordTex.push_back(coordTex);
                 vb.coordTex.push_back(0.0f);
 
-                vb.coordTex.push_back((float)index1 / res);
+                vb.coordTex.push_back(coordTex);
                 vb.coordTex.push_back(1.0f);
 
-                vb.coordTex.push_back((float)(index2) / res);
+                vb.coordTex.push_back(coordTex + deltaTex);
                 vb.coordTex.push_back(0.0f);
 
                 //////////////////////////////
 
-                vb.coordTex.push_back((float)(index2) / res);
+                vb.coordTex.push_back(coordTex + deltaTex);
                 vb.coordTex.push_back(0.0f);
 
-                vb.coordTex.push_back((float)index1 / res);
+                vb.coordTex.push_back(coordTex);
                 vb.coordTex.push_back(1.0f);
 
-                vb.coordTex.push_back((float)(index2) / res);
+                vb.coordTex.push_back(coordTex + deltaTex);
                 vb.coordTex.push_back(1.0f);
+
+                coordTex += deltaTex;
 
                 ///////////////////////////////////////////////////////////////
 
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index1].x - center1).x);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index1].x - center1).y);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index1].x - center1).z);
+                vb.normals.push_back(glm::normalize(circles[i].vertices[index1] - center1).x);
+                vb.normals.push_back(glm::normalize(circles[i].vertices[index1] - center1).y);
+                vb.normals.push_back(glm::normalize(circles[i].vertices[index1] - center1).z);
 
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1].x - center2).x);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1].x - center2).y);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1].x - center2).z);
+                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).x);
+                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).y);
+                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).z);
 
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2].x - center1).x);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2].x - center1).y);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2].x - center1).z);
+                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).x);
+                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).y);
+                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).z);
 
                 //////////////////////////////
 
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2].x - center1).x);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2].x - center1).y);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2].x - center1).z);
+                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).x);
+                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).y);
+                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).z);
 
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1].x - center2).x);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1].x - center2).y);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1].x - center2).z);
+                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).x);
+                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).y);
+                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).z);
 
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index2].x - center2).x);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index2].x - center2).y);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index2].x - center2).z);
+                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).x);
+                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).y);
+                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).z);
 
                 ///////////////////////////////////////////////////////////////
 
-                for(size_t k=0; k<6; k++)
+                for(size_t k = 0 ; k < 6 ; k++)
                 {
-                    vb.indexTex.push_back(getIndexTex(specie, "bark"));
+                    vb.indexTex.push_back(getIndexTexture("Pine"));
                 }
             }
         }
     }
 
-    void TreesGenerator::sendTree(Tree tree)
+    void VegetGenerator::addPlant(Plant plant)
     {
-        createTrunk(tree);
+        if(plant.type == VEGET_SCOTS_PINE && getIndexTexture("Pine") == -1)
+        {
+            Texture tex;
 
-        //
+            tex.specie = "Pine";
+            tex.tex = textures["Pine"];
 
-        positions.push_back(tree.pos);
+            vb.textures.push_back(tex);
+        }
+
+        createTrunk(plant);
+
+        positions.push_back(plant.pos);
     }
 }
