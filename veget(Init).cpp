@@ -1,5 +1,6 @@
 #include <dirent.h>
 #include <conio.h>
+#include <fstream>
 #include <SDL2/SDL_image.h>
 #include "../sdlglutils/sdlglutils.h"
 #include "veget.h"
@@ -8,8 +9,7 @@ namespace Veget
 {
     void VegetGenerator::Init()
     {
-        //
-
+        InitParams();
         LoadTextures();
     }
 
@@ -44,6 +44,163 @@ namespace Veget
 
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    void VegetGenerator::InitParams()
+    {
+        std::ifstream file("../Mini-libs/Veget/DataTrees.json");
+
+        Params p;
+        std::string type = "";
+
+        while(1)
+        {
+            std::string line;
+
+            if(!getline(file, line))
+            {
+                break;
+            }
+
+            if(line.find("\"Specy\"") != std::string::npos)
+            {
+                type = trim(line);
+
+                type.erase(0, type.find(":") + 2);
+                type.erase(type.rfind("\""));
+            }
+
+            else
+            if(line.find("\"heightMin\"") != std::string::npos)
+            {
+                std::string hMin = trim(line);
+
+                hMin.erase(0, hMin.find(":") + 1);
+
+                if(hMin.rfind(",") != std::string::npos)
+                {
+                    hMin.erase(hMin.rfind(","));
+                }
+
+                p.heightMin = atof(hMin.c_str());
+            }
+
+            else
+            if(line.find("\"heightMax\"") != std::string::npos)
+            {
+                std::string hMax = trim(line);
+
+                hMax.erase(0, hMax.find(":") + 1);
+
+                if(hMax.rfind(",") != std::string::npos)
+                {
+                    hMax.erase(hMax.rfind(","));
+                }
+
+                p.heightMax = atof(hMax.c_str());
+            }
+
+            else
+            if(line.find("\"radiusMin\"") != std::string::npos)
+            {
+                std::string rMin = trim(line);
+
+                rMin.erase(0, rMin.find(":") + 1);
+
+                if(rMin.rfind(",") != std::string::npos)
+                {
+                    rMin.erase(rMin.rfind(","));
+                }
+
+                p.radiusMin = atoi(rMin.c_str());
+            }
+
+            else
+            if(line.find("\"radiusMax\"") != std::string::npos)
+            {
+                std::string rMax = trim(line);
+
+                rMax.erase(0, rMax.find(":") + 1);
+
+                if(rMax.rfind(",") != std::string::npos)
+                {
+                    rMax.erase(rMax.rfind(","));
+                }
+
+                p.radiusMax = atoi(rMax.c_str());
+            }
+
+            else
+            if(line.find("\"ratioTopBottom\"") != std::string::npos)
+            {
+                std::string ratio = trim(line);
+
+                ratio.erase(0, ratio.find(":") + 1);
+
+                if(ratio.rfind(",") != std::string::npos)
+                {
+                    ratio.erase(ratio.rfind(","));
+                }
+
+                p.ratioTopBottom = atof(ratio.c_str());
+            }
+
+            else
+            if(line.find("\"texKey\"") != std::string::npos)
+            {
+                p.texKey = trim(line);
+
+                p.texKey.erase(0, p.texKey.find(":") + 2);
+                p.texKey.erase(p.texKey.rfind("\""));
+            }
+
+            else
+            if(line.find("\"beginBranch\"") != std::string::npos)
+            {
+                std::string bBranch = trim(line);
+
+                bBranch.erase(0, bBranch.find(":") + 1);
+
+                if(bBranch.rfind(",") != std::string::npos)
+                {
+                    bBranch.erase(bBranch.rfind(","));
+                }
+
+                p.beginBranch = atof(bBranch.c_str());
+            }
+
+            else
+            if(line.find("\"angleBranch\"") != std::string::npos)
+            {
+                std::string aBranch = trim(line);
+
+                aBranch.erase(0, aBranch.find(":") + 1);
+
+                if(aBranch.rfind(",") != std::string::npos)
+                {
+                    aBranch.erase(aBranch.rfind(","));
+                }
+
+                p.angleBranch = atof(aBranch.c_str());
+            }
+
+            else
+            if(line.find("\"shape\"") != std::string::npos)
+            {
+                p.shape = trim(line);
+
+                p.shape.erase(0, p.shape.find(":") + 2);
+                p.shape.erase(p.shape.rfind("\""));
+            }
+
+            else
+            if(line.find("}") != std::string::npos)
+            {
+                params[type] = p;
+            }
+        }
+
+        file.close();
     }
 
     void VegetGenerator::LoadTextures()
@@ -94,17 +251,12 @@ namespace Veget
     size_t VegetGenerator::createTrunk(Plant plant, std::vector<glm::vec3> &skeleton, float *trunkRadius)
     {
         float height, trunkDiameter, ratioTopBottom;
-        std::string specie;
         int indexTex;
 
-        if(plant.type == VEGET_SCOTS_PINE || plant.type == VEGET_UMBRELL_PINE || plant.type == VEGET_MARTITIM_PINE)
-        {
-            height = rand() % (20 - 6 + 1) + 6;
-            trunkDiameter = (rand() % (130 - 80 + 1) + 80) / 100.0f;
-            ratioTopBottom = 0.5;
-            specie = "Scots_Pine";
-            indexTex = getIndexTexture("Pine");
-        }
+        height = rand() % ((int)params[plant.type].heightMax - (int)params[plant.type].heightMin + 1) + (int)params[plant.type].heightMin;
+        trunkDiameter = (rand() % (params[plant.type].radiusMax - params[plant.type].radiusMin + 1) + params[plant.type].radiusMin) / 100.0f;
+        ratioTopBottom = params[plant.type].ratioTopBottom;
+        indexTex = getIndexTexture(params[plant.type].texKey);
 
         *trunkRadius = trunkDiameter/2;
 
@@ -282,7 +434,7 @@ namespace Veget
     {
         int indexTex;
 
-        if(plant.type == VEGET_GRASS)
+        if(plant.type == "VEGET_GRASS")
         {
             indexTex = getIndexTexture("Grass");
         }
@@ -394,28 +546,20 @@ namespace Veget
 
     void VegetGenerator::addPlant(Plant plant)
     {
-        if(plant.type == VEGET_SCOTS_PINE && getIndexTexture("Pine") == -1)
+        //if(plant.type == "VEGET_SCOTS_PINE" && getIndexTexture("Pine") == -1)
         {
             Texture tex;
 
-            tex.specie = "Pine";
-            tex.tex = textures["Pine"];
+            if(getIndexTexture(params[plant.type].texKey) == -1)
+            {
+                tex.specie = params[plant.type].texKey;
+                tex.tex = textures[params[plant.type].texKey];
 
-            vb.textures.push_back(tex);
+                vb.textures.push_back(tex);
+            }
         }
 
-        else
-        if(plant.type == VEGET_GRASS && getIndexTexture("Grass") == -1)
-        {
-            Texture tex;
-
-            tex.specie = "Grass";
-            tex.tex = textures["Grass"];
-
-            vb.textures.push_back(tex);
-        }
-
-        if(plant.type != VEGET_GRASS && plant.type != VEGET_LAVENDER)
+        if(plant.type != "VEGET_GRASS" && plant.type != "VEGET_LAVENDER")
         {
             std::vector<glm::vec3> trunkSkeleton;
             float trunkRadius;

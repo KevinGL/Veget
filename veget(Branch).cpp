@@ -13,17 +13,14 @@ namespace Veget
         float ratioTopBottom;
         int indexTex;
 
-        if(plant.type == VEGET_SCOTS_PINE)
-        {
-            beginBranch = 1.0f / 3;
-            angleBranch = 0.0f;
-            ratioTopBottom = 0.5;
-            indexTex = getIndexTexture("Pine");
-        }
+        beginBranch = params[plant.type].beginBranch;
+        angleBranch = params[plant.type].angleBranch;
+        ratioTopBottom = params[plant.type].ratioTopBottom;
+        indexTex = getIndexTexture(params[plant.type].texKey);
 
         std::vector<glm::vec3> baseBranchs;
 
-        const float gapBranchs = 0.5f;
+        const float gapBranchs = 0.2f;
 
         const float height = skeleton[skeleton.size()-1].z - skeleton[0].z;
         const float zBegin = skeleton[0].z + beginBranch * height;
@@ -66,9 +63,10 @@ namespace Veget
             const float angleZ = rand() % 360;
             float lg;
             const float lgMin = 0.5f * lgMax;
-            const float angleY = rand() % 21 - 10;
+            const float angleY = rand() % 21 - 10 + params[plant.type].angleBranch;
+            const std::string shape = params[plant.type].shape;
 
-            if(plant.type == VEGET_SCOTS_PINE)
+            if(shape == "Rect")
             {
                 if(index <= baseBranchs.size() / 4)
                 {
@@ -89,6 +87,18 @@ namespace Veget
                     const float ord = -coef * baseBranchs.size() + lgMin;
                     lg = coef * index + ord;
                 }
+            }
+
+            else
+            if(shape == "Sphere")
+            {
+                const float htMin = baseBranchs[0].z;
+                const float htMax = baseBranchs[baseBranchs.size()-1].z;
+                const float htMed = (htMin + htMax) / 2;
+                const float deltaZ = fabs(base.z - htMed);
+                const float radius = (htMax - htMin) / 2;
+
+                lg = sqrt(pow(radius, 2) - pow(deltaZ, 2));
             }
 
             nbVertices += createBranch(base, trunkRadius/4, ratioTopBottom, lg, indexTex, angleZ, angleY);

@@ -11,7 +11,7 @@ namespace Veget
 {
     #define PI 3.1415926535897932384626433832795
 
-    enum VEGET_TYPE
+    /*enum VEGET_TYPE
     {
         VEGET_SCOTS_PINE,
         VEGET_UMBRELL_PINE,
@@ -30,12 +30,25 @@ namespace Veget
         VEGET_LAVENDER,
         VEGET_GRASS,
         VEGET_UNDEFINED,
-    };
+    };*/
 
     struct Plant
     {
         glm::vec3 pos;
-        VEGET_TYPE type = VEGET_UNDEFINED;
+        std::string type = "";
+    };
+
+    struct Params
+    {
+        float heightMin;
+        float heightMax;
+        unsigned int radiusMin;
+        unsigned int radiusMax;
+        float ratioTopBottom;
+        std::string texKey;
+        float beginBranch;
+        float angleBranch;
+        std::string shape;
     };
 
     struct Plane
@@ -93,7 +106,9 @@ namespace Veget
         unsigned int nbSeg = 10;
         std::vector<size_t> nbVerticesByTree;
         std::vector<glm::vec3> positions;
+        std::map<std::string, Params> params;
 
+        void InitParams();
         void LoadTextures();
         size_t createTrunk(Plant plant, std::vector<glm::vec3> &skeleton, float *trunkRadius);
         size_t createBranchs(Plant plant, std::vector<glm::vec3> skeleton, const float trunkRadius);
@@ -118,4 +133,5 @@ namespace Veget
     };
 
     bool interPlaneSeg(Plane plane, Segment seg, glm::vec3 &inter);
+    std::string trim(const std::string str);
 }

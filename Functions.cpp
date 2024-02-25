@@ -28,4 +28,19 @@ namespace Veget
 
         return false;
     }
+
+    std::string trim(const std::string str)
+    {
+        std::string res = "";
+
+        for(size_t i = 0 ; i < str.length() ; i++)
+        {
+            if(str.at(i) != ' ' && str.at(i) != '\t')
+            {
+                res += str.at(i);
+            }
+        }
+
+        return res;
+    }
 }
