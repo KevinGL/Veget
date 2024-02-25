@@ -28,7 +28,7 @@ namespace Veget
 
         glBindVertexArray(vb.VAO);
 
-        glDrawArrays(GL_TRIANGLES, index * nbVerticesByTree, nbVerticesByTree);
+        glDrawArrays(GL_TRIANGLES, index * nbVerticesByTree[index], nbVerticesByTree[index]);
 
         //std::cout << vb.coordVert[0] << " " << vb.coordVert[1] << " " << vb.coordVert[2] << std::endl;
 
@@ -68,8 +68,10 @@ namespace Veget
 
                 if(glm::dot(camToTree, camToTarget) >= 0.0f && dist <= 100.0f)
                 {
-                    glDrawArrays(GL_TRIANGLES, i * nbVerticesByTree, nbVerticesByTree);
+                    glDrawArrays(GL_TRIANGLES, i * nbVerticesByTree[i], nbVerticesByTree[i]);
                 }
+
+                //std::cout << nbVerticesByTree[i] << std::endl;
             }
         }
     }

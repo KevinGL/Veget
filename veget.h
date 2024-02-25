@@ -38,6 +38,20 @@ namespace Veget
         VEGET_TYPE type = VEGET_UNDEFINED;
     };
 
+    struct Plane
+    {
+        float a;
+        float b;
+        float c;
+        float d;
+    };
+
+    struct Segment
+    {
+        glm::vec3 p1;
+        glm::vec3 p2;
+    };
+
     struct BoundBox
     {
         float side;
@@ -76,12 +90,16 @@ namespace Veget
         VertexBuffer vb;
         std::map<std::string, GLuint> textures;
         unsigned int res = 8;
-        unsigned int nbSeg = 5;
-        size_t nbVerticesByTree;
+        unsigned int nbSeg = 10;
+        std::vector<size_t> nbVerticesByTree;
         std::vector<glm::vec3> positions;
 
         void LoadTextures();
-        void createTrunk(Plant plant);
+        size_t createTrunk(Plant plant, std::vector<glm::vec3> &skeleton, float *trunkRadius);
+        size_t createBranchs(Plant plant, std::vector<glm::vec3> skeleton, const float trunkRadius);
+        size_t createBranch(const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const int indexTex, const float angleZ, const float angleY);
+        size_t createLeaves(std::vector<glm::vec3> skeleton, const float branchLg, const int indexTex, const glm::mat4 rotZ);
+        void createPlant(Plant plant);
         int getIndexTexture(const std::string specie);
 
         public :
@@ -98,4 +116,6 @@ namespace Veget
         }
         glm::vec3 getPos(const size_t index);
     };
+
+    bool interPlaneSeg(Plane plane, Segment seg, glm::vec3 &inter);
 }

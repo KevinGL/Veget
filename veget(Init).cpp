@@ -44,10 +44,6 @@ namespace Veget
 
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        ///////////////////////////////////////////////////
-
-        nbVerticesByTree = res * 6 * nbSeg;
     }
 
     void VegetGenerator::LoadTextures()
@@ -95,18 +91,22 @@ namespace Veget
         return -1;
     }
 
-    void VegetGenerator::createTrunk(Plant plant)
+    size_t VegetGenerator::createTrunk(Plant plant, std::vector<glm::vec3> &skeleton, float *trunkRadius)
     {
         float height, trunkDiameter, ratioTopBottom;
         std::string specie;
+        int indexTex;
 
-        if(plant.type == VEGET_SCOTS_PINE)
+        if(plant.type == VEGET_SCOTS_PINE || plant.type == VEGET_UMBRELL_PINE || plant.type == VEGET_MARTITIM_PINE)
         {
             height = rand() % (20 - 6 + 1) + 6;
-            trunkDiameter = (rand() % (200 - 80 + 1) + 80) / 100.0f;
+            trunkDiameter = (rand() % (130 - 80 + 1) + 80) / 100.0f;
             ratioTopBottom = 0.5;
             specie = "Scots_Pine";
+            indexTex = getIndexTexture("Pine");
         }
+
+        *trunkRadius = trunkDiameter/2;
 
         const float bottomDiameter = trunkDiameter;
         const float topDiameter = bottomDiameter * ratioTopBottom;
@@ -114,7 +114,7 @@ namespace Veget
 
         std::vector<Circle> circles;
 
-        for(size_t i=0 ; i < nbSeg+1 ; i++)
+        for(size_t i = 0 ; i < nbSeg + 1 ; i++)
         {
             const float coef = (topDiameter - bottomDiameter) / (nbSeg+1);
             const float diameter = coef * i + bottomDiameter;
@@ -124,6 +124,8 @@ namespace Veget
             center.x = plant.pos.x + (rand() % (50 - 10 + 1) + 10) / 100.0f;
             center.y = plant.pos.y + (rand() % (50 - 10 + 1) + 10) / 100.0f;
             center.z = plant.pos.z + i * segHeight;
+
+            skeleton.push_back(center);
 
             Circle c;
 
@@ -146,12 +148,14 @@ namespace Veget
             circles.push_back(c);
         }
 
+        size_t nbVertices = 0;
+
         for(size_t i = 0 ; i < circles.size()-1 ; i++)
         {
             glm::vec3 center1 = glm::vec3(0.0f);
             glm::vec3 center2 = glm::vec3(0.0f);
 
-            for(size_t j=0; j<res; j++)
+            for(size_t j = 0; j < res; j++)
             {
                 center1 += circles[i].vertices[j];
             }
@@ -262,9 +266,129 @@ namespace Veget
 
                 for(size_t k = 0 ; k < 6 ; k++)
                 {
-                    vb.indexTex.push_back(getIndexTexture("Pine"));
+                    vb.indexTex.push_back(indexTex);
                 }
+
+                ///////////////////////////////////////////////////////////////
+
+                nbVertices += 6;
             }
+        }
+
+        return nbVertices;
+    }
+
+    void VegetGenerator::createPlant(Plant plant)
+    {
+        int indexTex;
+
+        if(plant.type == VEGET_GRASS)
+        {
+            indexTex = getIndexTexture("Grass");
+        }
+
+        const float size = (rand() % (200 - 100 + 1) + 100) / 100.0f;
+        const float angle = rand() % 360;
+        const glm::mat4 rotation = glm::rotate(angle, 0.0f, 0.0f, 1.0f);
+
+        {
+            glm::vec4 v = rotation * glm::vec4(-size/2, 0.0f, 0.0f, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            v = rotation * glm::vec4(-size/2, 0.0f, size, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            v = rotation * glm::vec4(size/2, 0.0f, 0.0f, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            /////////////
+
+            v = rotation * glm::vec4(size/2, 0.0f, 0.0f, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            v = rotation * glm::vec4(-size/2, 0.0f, size, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            v = rotation * glm::vec4(size/2, 0.0f, size, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            //////////////////////////
+
+            v = rotation * glm::vec4(0.0f, -size/2, 0.0f, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            v = rotation * glm::vec4(0.0f, -size/2, size, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            v = rotation * glm::vec4(0.0f, size/2, 0.0f, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            /////////////
+
+            v = rotation * glm::vec4(0.0f, size/2, 0.0f, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            v = rotation * glm::vec4(0.0f, -size/2, size, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+
+            v = rotation * glm::vec4(0.0f, size/2, size, 1.0f);
+            vb.coordVert.push_back(v.x + plant.pos.x);
+            vb.coordVert.push_back(v.y + plant.pos.y);
+            vb.coordVert.push_back(v.z + plant.pos.z);
+        }
+
+        for(size_t i = 0 ; i < 2 ; i++)
+        {
+            vb.coordTex.push_back(0.0f);
+            vb.coordTex.push_back(0.0f);
+
+            vb.coordTex.push_back(0.0f);
+            vb.coordTex.push_back(1.0f);
+
+            vb.coordTex.push_back(1.0f);
+            vb.coordTex.push_back(0.0f);
+
+            /////////////
+
+            vb.coordTex.push_back(1.0f);
+            vb.coordTex.push_back(0.0f);
+
+            vb.coordTex.push_back(0.0f);
+            vb.coordTex.push_back(1.0f);
+
+            vb.coordTex.push_back(1.0f);
+            vb.coordTex.push_back(1.0f);
+        }
+
+        for(size_t i = 0 ; i < 12 ; i++)
+        {
+            vb.normals.push_back(0.0f);
+            vb.normals.push_back(0.0f);
+            vb.normals.push_back(0.0f);
+
+            vb.indexTex.push_back(indexTex);
         }
     }
 
@@ -280,7 +404,33 @@ namespace Veget
             vb.textures.push_back(tex);
         }
 
-        createTrunk(plant);
+        else
+        if(plant.type == VEGET_GRASS && getIndexTexture("Grass") == -1)
+        {
+            Texture tex;
+
+            tex.specie = "Grass";
+            tex.tex = textures["Grass"];
+
+            vb.textures.push_back(tex);
+        }
+
+        if(plant.type != VEGET_GRASS && plant.type != VEGET_LAVENDER)
+        {
+            std::vector<glm::vec3> trunkSkeleton;
+            float trunkRadius;
+
+            size_t nbVertices = createTrunk(plant, trunkSkeleton, &trunkRadius);
+            nbVertices += createBranchs(plant, trunkSkeleton, trunkRadius);
+
+            nbVerticesByTree.push_back(nbVertices);
+        }
+
+        else
+        {
+            createPlant(plant);
+            nbVerticesByTree.push_back(12);
+        }
 
         positions.push_back(plant.pos);
     }
