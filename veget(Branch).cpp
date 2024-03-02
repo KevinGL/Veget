@@ -6,17 +6,15 @@
 
 namespace Veget
 {
-    size_t VegetGenerator::createBranchs(Plant plant, std::vector<glm::vec3> skeleton, const float trunkRadius)
+    size_t VegetGenerator::createBranchs(std::string specie, std::vector<glm::vec3> skeleton, const float trunkRadius, VertexBuffer *model)
     {
         float beginBranch;
         float angleBranch;
         float ratioTopBottom;
-        int indexTex;
 
-        beginBranch = params[plant.type].beginBranch;
-        angleBranch = params[plant.type].angleBranch;
-        ratioTopBottom = params[plant.type].ratioTopBottom;
-        indexTex = getIndexTexture(params[plant.type].texKey);
+        beginBranch = params[specie].beginBranch;
+        angleBranch = params[specie].angleBranch;
+        ratioTopBottom = params[specie].ratioTopBottom;
 
         std::vector<glm::vec3> baseBranchs;
 
@@ -55,16 +53,21 @@ namespace Veget
 
         size_t nbVertices = 0;
 
-        const float lgMax = 0.25f * height;
+        const float ratioBranchTrunk = params[specie].ratioBranchTrunk;
+        const float lgMax = ratioBranchTrunk * height;
         size_t index = 0;
+
+        const float htMin = baseBranchs[0].z;
+        const float htMax = baseBranchs[baseBranchs.size()-1].z;
+        const float htMed = (htMin + htMax) / 2;
 
         for(const glm::vec3 base : baseBranchs)
         {
             const float angleZ = rand() % 360;
             float lg;
             const float lgMin = 0.5f * lgMax;
-            const float angleY = rand() % 21 - 10 + params[plant.type].angleBranch;
-            const std::string shape = params[plant.type].shape;
+            const float angleY = rand() % 21 - 10 + params[specie].angleBranch;
+            const std::string shape = params[specie].shape;
 
             if(shape == "Rect")
             {
@@ -92,25 +95,31 @@ namespace Veget
             else
             if(shape == "Sphere")
             {
-                const float htMin = baseBranchs[0].z;
-                const float htMax = baseBranchs[baseBranchs.size()-1].z;
-                const float htMed = (htMin + htMax) / 2;
                 const float deltaZ = fabs(base.z - htMed);
                 const float radius = (htMax - htMin) / 2;
 
                 lg = sqrt(pow(radius, 2) - pow(deltaZ, 2));
             }
 
-            nbVertices += createBranch(base, trunkRadius/4, ratioTopBottom, lg, indexTex, angleZ, angleY);
+            else
+            if(shape == "SemiSphere")
+            {
+                const float deltaZ = fabs(base.z - htMin);
+                const float radius = htMax - htMin;
+
+                lg = sqrt(pow(radius, 2) - pow(deltaZ, 2));
+            }
+
+            nbVertices += createBranch(base, trunkRadius * ratioBranchTrunk, ratioTopBottom, lg, angleZ, angleY, model);
 
             index++;
         }
     }
 
-    size_t VegetGenerator::createBranch(const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const int indexTex, const float angleZ, const float angleY)
+    size_t VegetGenerator::createBranch(const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
     {
         const float bottomDiameter = 2 * radius;
-        const float topDiameter = bottomDiameter * ratioTopBottom;
+        const float topDiameter = 0.0f;//bottomDiameter * ratioTopBottom;
         const float segLg = lg / nbSeg;
 
         std::vector<Circle> circles;
@@ -210,90 +219,84 @@ namespace Veget
                     index2 = 0;
                 }
 
-                vb.coordVert.push_back(circles[i].vertices[index1].x);
-                vb.coordVert.push_back(circles[i].vertices[index1].y);
-                vb.coordVert.push_back(circles[i].vertices[index1].z);
+                model->coordVert.push_back(circles[i].vertices[index1].x);
+                model->coordVert.push_back(circles[i].vertices[index1].y);
+                model->coordVert.push_back(circles[i].vertices[index1].z);
 
-                vb.coordVert.push_back(circles[i+1].vertices[index1].x);
-                vb.coordVert.push_back(circles[i+1].vertices[index1].y);
-                vb.coordVert.push_back(circles[i+1].vertices[index1].z);
+                model->coordVert.push_back(circles[i+1].vertices[index1].x);
+                model->coordVert.push_back(circles[i+1].vertices[index1].y);
+                model->coordVert.push_back(circles[i+1].vertices[index1].z);
 
-                vb.coordVert.push_back(circles[i].vertices[index2].x);
-                vb.coordVert.push_back(circles[i].vertices[index2].y);
-                vb.coordVert.push_back(circles[i].vertices[index2].z);
+                model->coordVert.push_back(circles[i].vertices[index2].x);
+                model->coordVert.push_back(circles[i].vertices[index2].y);
+                model->coordVert.push_back(circles[i].vertices[index2].z);
 
                 //////////////////////////////
 
-                vb.coordVert.push_back(circles[i].vertices[index2].x);
-                vb.coordVert.push_back(circles[i].vertices[index2].y);
-                vb.coordVert.push_back(circles[i].vertices[index2].z);
+                model->coordVert.push_back(circles[i].vertices[index2].x);
+                model->coordVert.push_back(circles[i].vertices[index2].y);
+                model->coordVert.push_back(circles[i].vertices[index2].z);
 
-                vb.coordVert.push_back(circles[i+1].vertices[index1].x);
-                vb.coordVert.push_back(circles[i+1].vertices[index1].y);
-                vb.coordVert.push_back(circles[i+1].vertices[index1].z);
+                model->coordVert.push_back(circles[i+1].vertices[index1].x);
+                model->coordVert.push_back(circles[i+1].vertices[index1].y);
+                model->coordVert.push_back(circles[i+1].vertices[index1].z);
 
-                vb.coordVert.push_back(circles[i+1].vertices[index2].x);
-                vb.coordVert.push_back(circles[i+1].vertices[index2].y);
-                vb.coordVert.push_back(circles[i+1].vertices[index2].z);
+                model->coordVert.push_back(circles[i+1].vertices[index2].x);
+                model->coordVert.push_back(circles[i+1].vertices[index2].y);
+                model->coordVert.push_back(circles[i+1].vertices[index2].z);
 
                 ///////////////////////////////////////////////////////////////
 
-                vb.coordTex.push_back(coordTex);
-                vb.coordTex.push_back(0.0f);
+                model->coordTex.push_back(coordTex);
+                model->coordTex.push_back(0.0f);
 
-                vb.coordTex.push_back(coordTex);
-                vb.coordTex.push_back(1.0f);
+                model->coordTex.push_back(coordTex);
+                model->coordTex.push_back(1.0f);
 
-                vb.coordTex.push_back(coordTex + deltaTex);
-                vb.coordTex.push_back(0.0f);
+                model->coordTex.push_back(coordTex + deltaTex);
+                model->coordTex.push_back(0.0f);
 
                 //////////////////////////////
 
-                vb.coordTex.push_back(coordTex + deltaTex);
-                vb.coordTex.push_back(0.0f);
+                model->coordTex.push_back(coordTex + deltaTex);
+                model->coordTex.push_back(0.0f);
 
-                vb.coordTex.push_back(coordTex);
-                vb.coordTex.push_back(1.0f);
+                model->coordTex.push_back(coordTex);
+                model->coordTex.push_back(1.0f);
 
-                vb.coordTex.push_back(coordTex + deltaTex);
-                vb.coordTex.push_back(1.0f);
+                model->coordTex.push_back(coordTex + deltaTex);
+                model->coordTex.push_back(1.0f);
 
                 coordTex += deltaTex;
 
                 ///////////////////////////////////////////////////////////////
 
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index1] - center1).x);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index1] - center1).y);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index1] - center1).z);
+                model->normals.push_back(glm::normalize(circles[i].vertices[index1] - center1).x);
+                model->normals.push_back(glm::normalize(circles[i].vertices[index1] - center1).y);
+                model->normals.push_back(glm::normalize(circles[i].vertices[index1] - center1).z);
 
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).x);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).y);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).z);
+                model->normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).x);
+                model->normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).y);
+                model->normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).z);
 
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).x);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).y);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).z);
+                model->normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).x);
+                model->normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).y);
+                model->normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).z);
 
                 //////////////////////////////
 
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).x);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).y);
-                vb.normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).z);
+                model->normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).x);
+                model->normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).y);
+                model->normals.push_back(glm::normalize(circles[i].vertices[index2] - center1).z);
 
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).x);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).y);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).z);
+                model->normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).x);
+                model->normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).y);
+                model->normals.push_back(glm::normalize(circles[i+1].vertices[index1] - center2).z);
 
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).x);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).y);
-                vb.normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).z);
+                model->normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).x);
+                model->normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).y);
+                model->normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).z);
 
-                ///////////////////////////////////////////////////////////////
-
-                for(size_t k = 0 ; k < 6 ; k++)
-                {
-                    vb.indexTex.push_back(indexTex);
-                }
 
                 ///////////////////////////////////////////////////////////////
 
@@ -301,7 +304,7 @@ namespace Veget
             }
         }
 
-        nbVertices += createLeaves(skeleton, lg, indexTex, rotationZ);
+        nbVertices += createLeaves(skeleton, lg, rotationZ, model);
 
         return nbVertices;
     }

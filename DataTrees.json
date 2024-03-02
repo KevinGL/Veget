@@ -1,11 +1,13 @@
 [
 	{
+		"tree": 1,
 		"Specy": "VEGET_SCOTS_PINE",
-		"heightMin": 6,
-		"heightMax": 20,
+		"heightMin": 600,
+		"heightMax": 2000,
 		"radiusMin": 80,
 		"radiusMax": 130,
 		"ratioTopBottom": 0.5,
+		"ratioBranchTrunk": 0.3333333,
 		"texKey": "Pine",
 		"beginBranch": 0.3333333,
 		"angleBranch": 0,
@@ -13,19 +15,22 @@
 	},
 	
 	{
+		"tree": 1,
 		"Specy": "VEGET_OAK",
-		"heightMin": 6,
-		"heightMax": 20,
+		"heightMin": 600,
+		"heightMax": 2000,
 		"radiusMin": 80,
 		"radiusMax": 130,
 		"ratioTopBottom": 0.5,
+		"ratioBranchTrunk": 0.3333333,
 		"texKey": "Oak",
-		"beginBranch": 0.3333333,
+		"beginBranch": 0.5,
 		"angleBranch": 0,
-		"shape": "Sphere"
+		"shape": "SemiSphere"
 	},
 	
 	{
+		"tree": 0,
 		"Specy": "VEGET_GRASS",
 		"texKey": "Grass"
 	},

@@ -32,7 +32,7 @@ namespace Veget
         VEGET_UNDEFINED,
     };*/
 
-    struct Plant
+    struct Item
     {
         glm::vec3 pos;
         std::string type = "";
@@ -40,11 +40,13 @@ namespace Veget
 
     struct Params
     {
-        float heightMin;
-        float heightMax;
+        bool tree;
+        unsigned int heightMin;
+        unsigned int heightMax;
         unsigned int radiusMin;
         unsigned int radiusMax;
         float ratioTopBottom;
+        float ratioBranchTrunk;
         std::string texKey;
         float beginBranch;
         float angleBranch;
@@ -85,9 +87,12 @@ namespace Veget
         std::vector<float> coordVert;
         std::vector<float> coordTex;
         std::vector<float> normals;
-        std::vector<float> colors;
-        std::vector<int> indexTex;
-        std::vector<Texture> textures;
+        std::vector<float> positions;
+        std::vector<float> scales;
+        std::vector<float> angles;
+        std::string specie;
+        std::string pathTex;
+        GLuint tex;
         BoundBox bbox;
     };
 
@@ -100,34 +105,34 @@ namespace Veget
     {
         private :
 
-        VertexBuffer vb;
+        std::vector<VertexBuffer> models;
         std::map<std::string, GLuint> textures;
         unsigned int res = 8;
         unsigned int nbSeg = 10;
         std::vector<size_t> nbVerticesByTree;
-        std::vector<glm::vec3> positions;
+        std::vector<Item> items;
         std::map<std::string, Params> params;
 
         void InitParams();
         void LoadTextures();
-        size_t createTrunk(Plant plant, std::vector<glm::vec3> &skeleton, float *trunkRadius);
-        size_t createBranchs(Plant plant, std::vector<glm::vec3> skeleton, const float trunkRadius);
-        size_t createBranch(const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const int indexTex, const float angleZ, const float angleY);
-        size_t createLeaves(std::vector<glm::vec3> skeleton, const float branchLg, const int indexTex, const glm::mat4 rotZ);
-        void createPlant(Plant plant);
-        int getIndexTexture(const std::string specie);
+        void createModels();
+        std::vector<float> getPositionsFromSpecie(const std::string specie);
+        size_t createTrunk(std::string specie, std::vector<glm::vec3> &skeleton, float *trunkRadius, VertexBuffer *model);
+        size_t createBranchs(std::string specie, std::vector<glm::vec3> skeleton, const float trunkRadius, VertexBuffer *model);
+        size_t createBranch(const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model);
+        size_t createLeaves(std::vector<glm::vec3> skeleton, const float branchLg, const glm::mat4 rotZ, VertexBuffer *model);
+        void createGrass(VertexBuffer *model);
 
         public :
 
         void Init();
         void Finalize();
-        void addPlant(Plant plant);
-        void drawVB_By_Index(const size_t index, const GLuint shader);
+        void addItem(Item item);
         void drawVB(const GLuint shader, const glm::vec3 camPos = glm::vec3(0.0f), const glm::vec3 camTarget = glm::vec3(0.0f), const bool frustumCulling = false);
         BoundBox getBoundBox(const size_t index);
         size_t getnbInstances()
         {
-            return positions.size();
+            return items.size();
         }
         glm::vec3 getPos(const size_t index);
     };
