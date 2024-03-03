@@ -137,7 +137,7 @@ namespace Veget
             }
 
             else
-            if(line.find("\"ratioBranchTrunk\"") != std::string::npos)
+            if(line.find("\"ratioBranchTrunkRadius\"") != std::string::npos)
             {
                 std::string ratio = trim(line);
 
@@ -148,7 +148,22 @@ namespace Veget
                     ratio.erase(ratio.rfind(","));
                 }
 
-                p.ratioBranchTrunk = atof(ratio.c_str());
+                p.ratioBranchTrunkRadius = atof(ratio.c_str());
+            }
+
+            else
+            if(line.find("\"ratioBranchTrunkLength\"") != std::string::npos)
+            {
+                std::string ratio = trim(line);
+
+                ratio.erase(0, ratio.find(":") + 1);
+
+                if(ratio.rfind(",") != std::string::npos)
+                {
+                    ratio.erase(ratio.rfind(","));
+                }
+
+                p.ratioBranchTrunkLength = atof(ratio.c_str());
             }
 
             else

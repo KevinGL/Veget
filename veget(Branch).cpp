@@ -53,8 +53,9 @@ namespace Veget
 
         size_t nbVertices = 0;
 
-        const float ratioBranchTrunk = params[specie].ratioBranchTrunk;
-        const float lgMax = ratioBranchTrunk * height;
+        const float ratioBranchTrunkLength = params[specie].ratioBranchTrunkLength;
+        const float ratioBranchTrunkRadius = params[specie].ratioBranchTrunkRadius;
+        const float lgMax = ratioBranchTrunkLength * height;
         size_t index = 0;
 
         const float htMin = baseBranchs[0].z;
@@ -110,7 +111,7 @@ namespace Veget
                 lg = sqrt(pow(radius, 2) - pow(deltaZ, 2));
             }
 
-            nbVertices += createBranch(base, trunkRadius * ratioBranchTrunk, ratioTopBottom, 2 * lg, angleZ, angleY, model);
+            nbVertices += createBranch(base, trunkRadius * ratioBranchTrunkRadius, ratioTopBottom, lg, angleZ, angleY, model);
 
             index++;
         }

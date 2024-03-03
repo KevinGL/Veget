@@ -47,7 +47,8 @@ namespace Veget
         unsigned int radiusMin;
         unsigned int radiusMax;
         float ratioTopBottom;
-        float ratioBranchTrunk;
+        float ratioBranchTrunkRadius;
+        float ratioBranchTrunkLength;
         std::string texKey;
         float beginBranch;
         float angleBranch;
