@@ -18,7 +18,7 @@ namespace Veget
             glBindTexture(GL_TEXTURE_2D, model.tex);
 
             glBindVertexArray(model.VAO);
-            glDrawArraysInstanced(GL_TRIANGLES, 0, model.coordVert.size()/3, model.positions.size());
+            glDrawArraysInstanced(GL_TRIANGLES, 0, model.coordVert.size()/3, model.positions.size()/3);
 
             /*for(size_t i = 0 ; i < model.positions.size() ; i += 3)
             {

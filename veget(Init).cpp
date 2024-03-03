@@ -378,6 +378,28 @@ namespace Veget
         return positions;
     }
 
+    std::vector<float> VegetGenerator::getScalesFromSpecie(const std::string specie)
+    {
+        std::vector<float> scales;
+
+        for(const Item it : items)
+        {
+            if(it.type == specie)
+            {
+                float scale = it.scale;
+
+                if(scale == 0.0f)
+                {
+                    scale = (rand() % (15 - 5 + 1) + 5) / 10.0f;
+                }
+
+                scales.push_back(scale);
+            }
+        }
+
+        return scales;
+    }
+
     void VegetGenerator::Finalize()
     {
         for(size_t i = 0 ; i < models.size() ; i++)
@@ -389,13 +411,12 @@ namespace Veget
             glBindVertexArray(models[i].VAO);
 
             models[i].positions = getPositionsFromSpecie(models[i].specie);
+            models[i].scales = getScalesFromSpecie(models[i].specie);
 
             for(size_t j = 0 ; j < models[i].positions.size()/3 ; j++)
             {
-                const float scale = (rand() % (15 - 5 + 1) + 5) / 10.0f;
                 const float angle = rand() % 360;
 
-                models[i].scales.push_back(scale);
                 models[i].angles.push_back(angle);
             }
 
@@ -464,8 +485,8 @@ namespace Veget
             const float radius = diameter / 2;
             glm::vec3 center;
 
-            center.x = (rand() % (100 - 10 + 1) + 10) / 100.0f;
-            center.y = (rand() % (100 - 10 + 1) + 10) / 100.0f;
+            center.x = (rand() % (50 - 10 + 1) + 10) / 100.0f;
+            center.y = (rand() % (50 - 10 + 1) + 10) / 100.0f;
             center.z = i * segHeight;
 
             skeleton.push_back(center);
@@ -511,7 +532,8 @@ namespace Veget
             center2 /= res;
 
             const float deltaTex = 0.4f / res;
-            float coordTex = 0.05f;
+            float coordTexX = 0.05f;
+            const float coordTexY = 0.5f * segHeight / trunkDiameter;
 
             for(size_t j = 0 ; j < res ; j++)
             {
@@ -555,27 +577,27 @@ namespace Veget
 
                 ///////////////////////////////////////////////////////////////
 
-                model->coordTex.push_back(coordTex);
+                model->coordTex.push_back(coordTexX);
                 model->coordTex.push_back(0.0f);
 
-                model->coordTex.push_back(coordTex);
-                model->coordTex.push_back(1.0f);
+                model->coordTex.push_back(coordTexX);
+                model->coordTex.push_back(coordTexY);
 
-                model->coordTex.push_back(coordTex + deltaTex);
+                model->coordTex.push_back(coordTexX + deltaTex);
                 model->coordTex.push_back(0.0f);
 
                 //////////////////////////////
 
-                model->coordTex.push_back(coordTex + deltaTex);
+                model->coordTex.push_back(coordTexX + deltaTex);
                 model->coordTex.push_back(0.0f);
 
-                model->coordTex.push_back(coordTex);
-                model->coordTex.push_back(1.0f);
+                model->coordTex.push_back(coordTexX);
+                model->coordTex.push_back(coordTexY);
 
-                model->coordTex.push_back(coordTex + deltaTex);
-                model->coordTex.push_back(1.0f);
+                model->coordTex.push_back(coordTexX + deltaTex);
+                model->coordTex.push_back(coordTexY);
 
-                coordTex += deltaTex;
+                coordTexX += deltaTex;
 
                 ///////////////////////////////////////////////////////////////
 

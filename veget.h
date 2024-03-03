@@ -35,6 +35,7 @@ namespace Veget
     struct Item
     {
         glm::vec3 pos;
+        float scale = 0.0f;
         std::string type = "";
     };
 
@@ -117,6 +118,7 @@ namespace Veget
         void LoadTextures();
         void createModels();
         std::vector<float> getPositionsFromSpecie(const std::string specie);
+        std::vector<float> getScalesFromSpecie(const std::string specie);
         size_t createTrunk(std::string specie, std::vector<glm::vec3> &skeleton, float *trunkRadius, VertexBuffer *model);
         size_t createBranchs(std::string specie, std::vector<glm::vec3> skeleton, const float trunkRadius, VertexBuffer *model);
         size_t createBranch(const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model);

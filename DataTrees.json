@@ -30,6 +30,21 @@
 	},
 	
 	{
+		"tree": 1,
+		"Specy": "VEGET_PLANE",
+		"heightMin": 600,
+		"heightMax": 2000,
+		"radiusMin": 80,
+		"radiusMax": 130,
+		"ratioTopBottom": 0.25,
+		"ratioBranchTrunk": 0.25,
+		"texKey": "Plane",
+		"beginBranch": 0.5,
+		"angleBranch": -25,
+		"shape": "Rect"
+	},
+	
+	{
 		"tree": 0,
 		"Specy": "VEGET_GRASS",
 		"texKey": "Grass"

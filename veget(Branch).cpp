@@ -110,7 +110,7 @@ namespace Veget
                 lg = sqrt(pow(radius, 2) - pow(deltaZ, 2));
             }
 
-            nbVertices += createBranch(base, trunkRadius * ratioBranchTrunk, ratioTopBottom, lg, angleZ, angleY, model);
+            nbVertices += createBranch(base, trunkRadius * ratioBranchTrunk, ratioTopBottom, 2 * lg, angleZ, angleY, model);
 
             index++;
         }
@@ -119,7 +119,7 @@ namespace Veget
     size_t VegetGenerator::createBranch(const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
     {
         const float bottomDiameter = 2 * radius;
-        const float topDiameter = 0.0f;//bottomDiameter * ratioTopBottom;
+        const float topDiameter = bottomDiameter * ratioTopBottom;
         const float segLg = lg / nbSeg;
 
         std::vector<Circle> circles;
@@ -203,7 +203,8 @@ namespace Veget
             center2 /= res;
 
             const float deltaTex = 0.4f / res;
-            float coordTex = 0.05f;
+            float coordTexX = 0.05f;
+            const float coordTexY = 0.5f * segLg / bottomDiameter;
 
             for(size_t j = 0 ; j < res ; j++)
             {
@@ -247,27 +248,27 @@ namespace Veget
 
                 ///////////////////////////////////////////////////////////////
 
-                model->coordTex.push_back(coordTex);
+                model->coordTex.push_back(coordTexX);
                 model->coordTex.push_back(0.0f);
 
-                model->coordTex.push_back(coordTex);
-                model->coordTex.push_back(1.0f);
+                model->coordTex.push_back(coordTexX);
+                model->coordTex.push_back(coordTexY);
 
-                model->coordTex.push_back(coordTex + deltaTex);
+                model->coordTex.push_back(coordTexX + deltaTex);
                 model->coordTex.push_back(0.0f);
 
                 //////////////////////////////
 
-                model->coordTex.push_back(coordTex + deltaTex);
+                model->coordTex.push_back(coordTexX + deltaTex);
                 model->coordTex.push_back(0.0f);
 
-                model->coordTex.push_back(coordTex);
-                model->coordTex.push_back(1.0f);
+                model->coordTex.push_back(coordTexX);
+                model->coordTex.push_back(coordTexY);
 
-                model->coordTex.push_back(coordTex + deltaTex);
-                model->coordTex.push_back(1.0f);
+                model->coordTex.push_back(coordTexX + deltaTex);
+                model->coordTex.push_back(coordTexY);
 
-                coordTex += deltaTex;
+                coordTexX += deltaTex;
 
                 ///////////////////////////////////////////////////////////////
 
