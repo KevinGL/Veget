@@ -5,11 +5,9 @@
 
 namespace Veget
 {
-    size_t VegetGenerator::createLeaves(std::vector<glm::vec3> skeleton, const float branchLg, const glm::mat4 rotZ, VertexBuffer *model)
+    void VegetGenerator::createLeaves(std::vector<glm::vec3> skeleton, const float branchRadius, const float leavesSize, const glm::mat4 rotZ, VertexBuffer *model)
     {
-        size_t nbVertices = 0;
-
-        const float size = branchLg / 2;
+        const float size = 12 * leavesSize * branchRadius;
 
         for(const glm::vec3 v : skeleton)
         {
@@ -134,10 +132,6 @@ namespace Veget
                 model->normals.push_back(0.0f);
                 model->normals.push_back(0.0f);
             }
-
-            nbVertices += 6;
         }
-
-        return nbVertices;
     }
 }

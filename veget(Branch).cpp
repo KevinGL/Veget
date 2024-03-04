@@ -6,19 +6,18 @@
 
 namespace Veget
 {
-    size_t VegetGenerator::createBranchs(std::string specie, std::vector<glm::vec3> skeleton, const float trunkRadius, VertexBuffer *model)
+    void VegetGenerator::createBranchs(const std::string specie, std::vector<glm::vec3> skeleton, const float trunkRadius, VertexBuffer *model)
     {
-        float beginBranch;
-        float angleBranch;
-        float ratioTopBottom;
-
-        beginBranch = params[specie].beginBranch;
-        angleBranch = params[specie].angleBranch;
-        ratioTopBottom = params[specie].ratioTopBottom;
+        const float beginBranch = params[specie].beginBranch;
+        const float angleBranch = params[specie].angleBranch;
+        const float ratioTopBottom = params[specie].ratioTopBottom;
+        const std::string branchsCurve = params[specie].branchsCurve;
+        float leavesSize = params[specie].leavesSize;
+        const unsigned int torsion = params[specie].torsion;
 
         std::vector<glm::vec3> baseBranchs;
 
-        const float gapBranchs = 0.2f;
+        const float gapBranchs = 0.1f;
 
         const float height = skeleton[skeleton.size()-1].z - skeleton[0].z;
         const float zBegin = skeleton[0].z + beginBranch * height;
@@ -51,8 +50,6 @@ namespace Veget
             }
         }
 
-        size_t nbVertices = 0;
-
         const float ratioBranchTrunkLength = params[specie].ratioBranchTrunkLength;
         const float ratioBranchTrunkRadius = params[specie].ratioBranchTrunkRadius;
         const float lgMax = ratioBranchTrunkLength * height;
@@ -62,16 +59,19 @@ namespace Veget
         const float htMax = baseBranchs[baseBranchs.size()-1].z;
         const float htMed = (htMin + htMax) / 2;
 
+        const float leavesSizeInit = leavesSize;
+
         for(const glm::vec3 base : baseBranchs)
         {
             const float angleZ = rand() % 360;
             float lg;
-            const float lgMin = 0.5f * lgMax;
             const float angleY = rand() % 21 - 10 + params[specie].angleBranch;
             const std::string shape = params[specie].shape;
 
-            if(shape == "Rect")
+            if(shape == "RECT")
             {
+                const float lgMin = 0.5f * lgMax;
+
                 if(index <= baseBranchs.size() / 4)
                 {
                     const float coef = (lgMax - lgMin) / (baseBranchs.size() / 4);
@@ -94,8 +94,10 @@ namespace Veget
             }
 
             else
-            if(shape == "Sphere")
+            if(shape == "SPHERE")
             {
+                const float lgMin = 0.5f * lgMax;
+
                 const float deltaZ = fabs(base.z - htMed);
                 const float radius = (htMax - htMin) / 2;
 
@@ -103,21 +105,76 @@ namespace Veget
             }
 
             else
-            if(shape == "SemiSphere")
+            if(shape == "SEMISPHERE")
             {
+                const float lgMin = 0.5f * lgMax;
+
                 const float deltaZ = fabs(base.z - htMin);
                 const float radius = htMax - htMin;
 
                 lg = sqrt(pow(radius, 2) - pow(deltaZ, 2));
             }
 
-            nbVertices += createBranch(base, trunkRadius * ratioBranchTrunkRadius, ratioTopBottom, lg, angleZ, angleY, model);
+            else
+            if(shape == "CONIC")
+            {
+                const float lgMin = 0.1f * lgMax;
+
+                const float coef = (lgMax - lgMin) / (htMin - htMax);
+                const float ord = -coef * htMin + lgMax;
+
+                lg = coef * base.z + ord;
+            }
+
+            else
+            if(shape == "FASTIGIATED")
+            {
+                const float htInterm = htMin + 0.125f * (htMax - htMin);
+
+                if(base.z <= htInterm)
+                {
+                    const float period = 4 * (htInterm - htMin);
+                    const float pulsation = (2 * M_PI) / period;
+                    const float phase = -pulsation * htMin;
+                    const float amp = lgMax;
+
+                    lg = amp * sin(pulsation * base.z + phase);
+                    leavesSize = leavesSizeInit * sin(pulsation * base.z + phase);
+
+                    if(lg < 0)
+                    {
+                        lg = 0.0f;
+                    }
+
+                    //std::cout << "period=" << period << " pulsation=" << pulsation << " phase=" << phase << " amp=" << amp << " z=" << base.z << " => " << lg << " " << leavesSize << std::endl;
+                }
+
+                else
+                {
+                    const float period = 4.1f * (htMax - htInterm);
+                    const float pulsation = (2 * M_PI) / period;
+                    const float amp = lgMax;
+                    const float phase = asin(lgMax / amp) - pulsation * htInterm;
+
+                    lg = amp * sin(pulsation * base.z + phase);
+                    leavesSize = leavesSizeInit * sin(pulsation * base.z + phase);
+
+                    if(lg < 0)
+                    {
+                        lg = 0.0f;
+                    }
+
+                    //std::cout << "period=" << period << " pulsation=" << pulsation << " phase=" << phase << " amp=" << amp << " z=" << base.z << " => " << lg << " " << leavesSize << std::endl;
+                }
+            }
+
+            createBranch(branchsCurve, leavesSize, torsion * ratioBranchTrunkRadius, base, trunkRadius * ratioBranchTrunkRadius, ratioTopBottom, lg, angleZ, angleY, model);
 
             index++;
         }
     }
 
-    size_t VegetGenerator::createBranch(const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
+    void VegetGenerator::createBranch(const std::string branchsCurve, const float leavesSize, const unsigned int torsion, const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
     {
         const float bottomDiameter = 2 * radius;
         const float topDiameter = bottomDiameter * ratioTopBottom;
@@ -167,11 +224,19 @@ namespace Veget
 
             glm::vec4 segVec;
 
-            const int randGap = (int)(100 * lg / 8);
-
             segVec.x = segLg;
-            segVec.y = (rand() % (randGap + 1) - randGap/2) / 100.0f;
-            segVec.z = (rand() % (randGap + 1) - randGap/2) / 100.0f;
+
+            if(torsion != 0)
+            {
+                segVec.y = (rand() % torsion) / 100.0f;
+                segVec.z = (rand() % torsion) / 100.0f + getCurve(branchsCurve, i, base.z);
+            }
+            else
+            {
+                segVec.y = 0;
+                segVec.y = getCurve(branchsCurve, i, base.z);
+            }
+
             segVec.w = 1.0f;
 
             segVec = rotationY * segVec;
@@ -183,8 +248,6 @@ namespace Veget
             center.y += segVec.y;
             center.z += segVec.z;
         }
-
-        size_t nbVertices = 0;
 
         for(size_t i = 0 ; i < circles.size()-1 ; i++)
         {
@@ -298,16 +361,28 @@ namespace Veget
                 model->normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).x);
                 model->normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).y);
                 model->normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).z);
-
-
-                ///////////////////////////////////////////////////////////////
-
-                nbVertices += 6;
             }
         }
 
-        nbVertices += createLeaves(skeleton, lg, rotationZ, model);
+        createLeaves(skeleton, radius, leavesSize, rotationZ, model);
+    }
 
-        return nbVertices;
+    float VegetGenerator::getCurve(const std::string curve, const size_t index, const float zBase)
+    {
+        float deltaZ;
+
+        if(curve == "LINEAR")
+        {
+            deltaZ = 0.0f;
+        }
+
+        else
+        if(curve == "WEEPING")
+        {
+            const float coef = -zBase / (nbSeg * nbSeg);
+            deltaZ = coef * (index * index);
+        }
+
+        return deltaZ;
     }
 }

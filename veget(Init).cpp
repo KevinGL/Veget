@@ -215,6 +215,45 @@ namespace Veget
             }
 
             else
+            if(line.find("\"branchsCurve\"") != std::string::npos)
+            {
+                p.branchsCurve = trim(line);
+
+                p.branchsCurve.erase(0, p.branchsCurve.find(":") + 2);
+                p.branchsCurve.erase(p.branchsCurve.rfind("\""));
+            }
+
+            else
+            if(line.find("\"leavesSize\"") != std::string::npos)
+            {
+               std::string lSize = trim(line);
+
+                lSize.erase(0, lSize.find(":") + 1);
+
+                if(lSize.rfind(",") != std::string::npos)
+                {
+                    lSize.erase(lSize.rfind(","));
+                }
+
+                p.leavesSize = atof(lSize.c_str());
+            }
+
+            else
+            if(line.find("\"torsion\"") != std::string::npos)
+            {
+               std::string torsion = trim(line);
+
+                torsion.erase(0, torsion.find(":") + 1);
+
+                if(torsion.rfind(",") != std::string::npos)
+                {
+                    torsion.erase(torsion.rfind(","));
+                }
+
+                p.torsion = atoi(torsion.c_str());
+            }
+
+            else
             if(line.find("}") != std::string::npos)
             {
                 params[type] = p;
@@ -477,13 +516,12 @@ namespace Veget
         }
     }
 
-    size_t VegetGenerator::createTrunk(std::string specie, std::vector<glm::vec3> &skeleton, float *trunkRadius, VertexBuffer *model)
+    void VegetGenerator::createTrunk(const std::string specie, std::vector<glm::vec3> &skeleton, float *trunkRadius, VertexBuffer *model)
     {
-        float height, trunkDiameter, ratioTopBottom;
-
-        height = (rand() % ((int)params[specie].heightMax - (int)params[specie].heightMin + 1) + (int)params[specie].heightMin) / 100.0f;
-        trunkDiameter = (rand() % (params[specie].radiusMax - params[specie].radiusMin + 1) + params[specie].radiusMin) / 100.0f;
-        ratioTopBottom = params[specie].ratioTopBottom;
+        const float height = (rand() % ((int)params[specie].heightMax - (int)params[specie].heightMin + 1) + (int)params[specie].heightMin) / 100.0f;
+        const float trunkDiameter = (rand() % (params[specie].radiusMax - params[specie].radiusMin + 1) + params[specie].radiusMin) / 100.0f;
+        const float ratioTopBottom = params[specie].ratioTopBottom;
+        const unsigned int torsion = params[specie].torsion;
 
         *trunkRadius = trunkDiameter/2;
 
@@ -500,8 +538,17 @@ namespace Veget
             const float radius = diameter / 2;
             glm::vec3 center;
 
-            center.x = (rand() % (50 - 10 + 1) + 10) / 100.0f;
-            center.y = (rand() % (50 - 10 + 1) + 10) / 100.0f;
+            if(torsion != 0)
+            {
+                center.x = (rand() % torsion) / 100.0f;
+                center.y = (rand() % torsion) / 100.0f;
+            }
+            else
+            {
+                center.x = 0.0f;
+                center.y = 0.0f;
+            }
+
             center.z = i * segHeight;
 
             skeleton.push_back(center);
@@ -526,8 +573,6 @@ namespace Veget
 
             circles.push_back(c);
         }
-
-        size_t nbVertices = 0;
 
         for(size_t i = 0 ; i < circles.size()-1 ; i++)
         {
@@ -641,12 +686,8 @@ namespace Veget
                 model->normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).x);
                 model->normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).y);
                 model->normals.push_back(glm::normalize(circles[i+1].vertices[index2] - center2).z);
-
-                nbVertices += 6;
             }
         }
-
-        return nbVertices;
     }
 
     void VegetGenerator::addItem(Item item)

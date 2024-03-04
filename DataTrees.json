@@ -10,9 +10,12 @@
 		"ratioBranchTrunkRadius": 0.2,
 		"ratioBranchTrunkLength": 0.4,
 		"texKey": "Pine",
-		"beginBranch": 0.3333333,
-		"angleBranch": 0,
-		"shape": "Rect"
+		"beginBranch": 0.5,
+		"angleBranch": -25,
+		"shape": "RECT",
+		"branchsCurve": "LINEAR",
+		"leavesSize": 2,
+		"torsion": 40
 	},
 	
 	{
@@ -28,7 +31,10 @@
 		"texKey": "Oak",
 		"beginBranch": 0.5,
 		"angleBranch": 0,
-		"shape": "SemiSphere"
+		"shape": "SEMISPHERE",
+		"branchsCurve": "LINEAR",
+		"leavesSize": 0.5,
+		"torsion": 40
 	},
 	
 	{
@@ -44,7 +50,48 @@
 		"texKey": "Plane",
 		"beginBranch": 0.5,
 		"angleBranch": -25,
-		"shape": "Rect"
+		"shape": "RECT",
+		"branchsCurve": "LINEAR",
+		"leavesSize": 1,
+		"torsion": 40
+	},
+	
+	{
+		"tree": 1,
+		"Specy": "VEGET_FIR",
+		"heightMin": 600,
+		"heightMax": 3000,
+		"radiusMin": 80,
+		"radiusMax": 130,
+		"ratioTopBottom": 0.25,
+		"ratioBranchTrunkRadius": 0.25,
+		"ratioBranchTrunkLength": 0.25,
+		"texKey": "Pine",
+		"beginBranch": 0.2,
+		"angleBranch": 0,
+		"shape": "CONIC",
+		"branchsCurve": "LINEAR",
+		"leavesSize": 1,
+		"torsion": 40
+	},
+	
+	{
+		"tree": 1,
+		"Specy": "VEGET_CYPRESS",
+		"heightMin": 400,
+		"heightMax": 700,
+		"radiusMin": 20,
+		"radiusMax": 25,
+		"ratioTopBottom": 0.125,
+		"ratioBranchTrunkRadius": 0.25,
+		"ratioBranchTrunkLength": 0.25,
+		"texKey": "Cypress",
+		"beginBranch": 0.1,
+		"angleBranch": -80,
+		"shape": "FASTIGIATED",
+		"branchsCurve": "LINEAR",
+		"leavesSize": 2,
+		"torsion": 5
 	},
 	
 	{
