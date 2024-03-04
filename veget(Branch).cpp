@@ -13,7 +13,7 @@ namespace Veget
         const float ratioTopBottom = params[specie].ratioTopBottom;
         const std::string branchsCurve = params[specie].branchsCurve;
         float leavesSize = params[specie].leavesSize;
-        const unsigned int torsion = params[specie].torsion;
+        const int torsion = params[specie].torsionBranchs;
 
         std::vector<glm::vec3> baseBranchs;
 
@@ -168,13 +168,13 @@ namespace Veget
                 }
             }
 
-            createBranch(branchsCurve, leavesSize, torsion * ratioBranchTrunkRadius, base, trunkRadius * ratioBranchTrunkRadius, ratioTopBottom, lg, angleZ, angleY, model);
+            createBranch(branchsCurve, leavesSize, torsion, base, trunkRadius * ratioBranchTrunkRadius, ratioTopBottom, lg, angleZ, angleY, model);
 
             index++;
         }
     }
 
-    void VegetGenerator::createBranch(const std::string branchsCurve, const float leavesSize, const unsigned int torsion, const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
+    void VegetGenerator::createBranch(const std::string branchsCurve, const float leavesSize, const int torsion, const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
     {
         const float bottomDiameter = 2 * radius;
         const float topDiameter = bottomDiameter * ratioTopBottom;
@@ -228,12 +228,12 @@ namespace Veget
 
             if(torsion != 0)
             {
-                segVec.y = (rand() % torsion) / 100.0f;
-                segVec.z = (rand() % torsion) / 100.0f + getCurve(branchsCurve, i, base.z);
+                segVec.y = (rand() % torsion - torsion/2) / 100.0f;
+                segVec.z = (rand() % torsion - torsion/2) / 100.0f + getCurve(branchsCurve, i, base.z);
             }
             else
             {
-                segVec.y = 0;
+                segVec.y = 0.0f;
                 segVec.y = getCurve(branchsCurve, i, base.z);
             }
 

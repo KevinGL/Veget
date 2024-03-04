@@ -15,7 +15,9 @@
 		"shape": "RECT",
 		"branchsCurve": "LINEAR",
 		"leavesSize": 2,
-		"torsion": 40
+		"torsion": 40,
+		"torsionBranchs": 40,
+		"multiTrunk": 1,
 	},
 	
 	{
@@ -34,7 +36,9 @@
 		"shape": "SEMISPHERE",
 		"branchsCurve": "LINEAR",
 		"leavesSize": 0.5,
-		"torsion": 40
+		"torsion": 40,
+		"torsionBranchs": 40,
+		"multiTrunk": 1,
 	},
 	
 	{
@@ -45,15 +49,17 @@
 		"radiusMin": 80,
 		"radiusMax": 130,
 		"ratioTopBottom": 0.25,
-		"ratioBranchTrunkRadius": 0.25,
+		"ratioBranchTrunkRadius": 0.5,
 		"ratioBranchTrunkLength": 0.5,
 		"texKey": "Plane",
 		"beginBranch": 0.5,
 		"angleBranch": -25,
 		"shape": "RECT",
 		"branchsCurve": "LINEAR",
-		"leavesSize": 1,
-		"torsion": 40
+		"leavesSize": 0.5,
+		"torsion": 60,
+		"torsionBranchs": 40,
+		"multiTrunk": 1,
 	},
 	
 	{
@@ -72,7 +78,9 @@
 		"shape": "CONIC",
 		"branchsCurve": "LINEAR",
 		"leavesSize": 1,
-		"torsion": 40
+		"torsion": 40,
+		"torsionBranchs": 40,
+		"multiTrunk": 0,
 	},
 	
 	{
@@ -91,12 +99,83 @@
 		"shape": "FASTIGIATED",
 		"branchsCurve": "LINEAR",
 		"leavesSize": 2,
-		"torsion": 5
+		"torsion": 5,
+		"torsionBranchs": 5,
+		"multiTrunk": 0,
+	},
+	
+	{
+		"tree": 1,
+		"Specy": "VEGET_BIRCH",
+		"heightMin": 700,
+		"heightMax": 2000,
+		"radiusMin": 80,
+		"radiusMax": 130,
+		"ratioTopBottom": 0.125,
+		"ratioBranchTrunkRadius": 0.125,
+		"ratioBranchTrunkLength": 0.5,
+		"texKey": "Birch",
+		"beginBranch": 0.5,
+		"angleBranch": -50,
+		"shape": "RECT",
+		"branchsCurve": "LINEAR",
+		"leavesSize": 1.5,
+		"torsion": 40,
+		"torsionBranchs": 320,
+		"multiTrunk": 1,
+	},
+	
+	{
+		"tree": 1,
+		"Specy": "VEGET_POPLAR",
+		"heightMin": 3000,
+		"heightMax": 4000,
+		"radiusMin": 80,
+		"radiusMax": 130,
+		"ratioTopBottom": 0.125,
+		"ratioBranchTrunkRadius": 0.125,
+		"ratioBranchTrunkLength": 0.5,
+		"texKey": "Poplar",
+		"beginBranch": 0.15,
+		"angleBranch": -80,
+		"shape": "RECT",
+		"branchsCurve": "LINEAR",
+		"leavesSize": 2,
+		"torsion": 40,
+		"torsionBranchs": 50,
+		"multiTrunk": 0,
+	},
+	
+	{
+		"tree": 1,
+		"Specy": "VEGET_OLIV",
+		"heightMin": 200,
+		"heightMax": 500,
+		"radiusMin": 80,
+		"radiusMax": 110,
+		"ratioTopBottom": 0.5,
+		"ratioBranchTrunkRadius": 0.25,
+		"ratioBranchTrunkLength": 0.8,
+		"texKey": "Oliv",
+		"beginBranch": 0.8,
+		"angleBranch": -30,
+		"shape": "RECT",
+		"branchsCurve": "LINEAR",
+		"leavesSize": 1,
+		"torsion": 40,
+		"torsionBranchs": 20,
+		"multiTrunk": 0,
 	},
 	
 	{
 		"tree": 0,
 		"Specy": "VEGET_GRASS",
 		"texKey": "Grass"
+	},
+	
+	{
+		"tree": 0,
+		"Specy": "VEGET_LAVENDER",
+		"texKey": "Lavender"
 	},
 ]

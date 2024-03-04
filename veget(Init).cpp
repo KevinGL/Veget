@@ -254,6 +254,45 @@ namespace Veget
             }
 
             else
+            if(line.find("\"torsionBranchs\"") != std::string::npos)
+            {
+               std::string torsionBranchs = trim(line);
+
+                torsionBranchs.erase(0, torsionBranchs.find(":") + 1);
+
+                if(torsionBranchs.rfind(",") != std::string::npos)
+                {
+                    torsionBranchs.erase(torsionBranchs.rfind(","));
+                }
+
+                p.torsionBranchs = atoi(torsionBranchs.c_str());
+            }
+
+            else
+            if(line.find("\"multiTrunk\"") != std::string::npos)
+            {
+               std::string multiTrunk = trim(line);
+
+                multiTrunk.erase(0, multiTrunk.find(":") + 1);
+
+                if(multiTrunk.rfind(",") != std::string::npos)
+                {
+                    multiTrunk.erase(multiTrunk.rfind(","));
+                }
+
+                if(multiTrunk == "0")
+                {
+                    p.multiTrunk = false;
+                }
+
+                else
+                if(multiTrunk == "1")
+                {
+                    p.multiTrunk = true;
+                }
+            }
+
+            else
             if(line.find("}") != std::string::npos)
             {
                 params[type] = p;
