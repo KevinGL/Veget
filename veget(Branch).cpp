@@ -11,7 +11,7 @@ namespace Veget
         const float beginBranch = params[specie].beginBranch;
         const float angleBranch = params[specie].angleBranch;
         const float ratioTopBottom = params[specie].ratioTopBottom;
-        const std::string branchsCurve = params[specie].branchsCurve;
+        const float branchsWeigth = params[specie].branchsWeigth;
         float leavesSize = params[specie].leavesSize;
         const int torsion = params[specie].torsionBranchs;
 
@@ -168,13 +168,13 @@ namespace Veget
                 }
             }
 
-            createBranch(branchsCurve, leavesSize, torsion, base, trunkRadius * ratioBranchTrunkRadius, ratioTopBottom, lg, angleZ, angleY, model);
+            createBranch(branchsWeigth, leavesSize, torsion, base, trunkRadius * ratioBranchTrunkRadius, ratioTopBottom, lg, angleZ, angleY, model);
 
             index++;
         }
     }
 
-    void VegetGenerator::createBranch(const std::string branchsCurve, const float leavesSize, const int torsion, const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
+    void VegetGenerator::createBranch(const float branchsWeight, const float leavesSize, const int torsion, const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
     {
         const float bottomDiameter = 2 * radius;
         const float topDiameter = bottomDiameter * ratioTopBottom;
@@ -187,6 +187,8 @@ namespace Veget
 
         const glm::mat4 rotationZ = glm::rotate(angleZ, 0.0f, 0.0f, 1.0f);
         const glm::mat4 rotationY = glm::rotate(angleY, 0.0f, 1.0f, 0.0f);
+
+        float distMax = 0.0f;
 
         for(size_t i = 0 ; i < nbSeg + 1 ; i++)
         {
@@ -229,12 +231,12 @@ namespace Veget
             if(torsion != 0)
             {
                 segVec.y = (rand() % torsion - torsion/2) / 100.0f;
-                segVec.z = (rand() % torsion - torsion/2) / 100.0f + getCurve(branchsCurve, i, base.z);
+                segVec.z = (rand() % torsion - torsion/2) / 100.0f;// + getCurve(branchsCurve, i, base.z);
             }
             else
             {
                 segVec.y = 0.0f;
-                segVec.y = getCurve(branchsCurve, i, base.z);
+                segVec.y = 0.0f;//getCurve(branchsCurve, i, base.z);
             }
 
             segVec.w = 1.0f;
@@ -244,9 +246,32 @@ namespace Veget
 
             skeleton.push_back(center);
 
+            const float distXY = sqrt(pow(skeleton[i].x - base.x, 2) + pow(skeleton[i].y - base.y, 2));
+
+            if(distXY > distMax)
+            {
+                distMax = distXY;
+            }
+
             center.x += segVec.x;
             center.y += segVec.y;
             center.z += segVec.z;
+        }
+
+        const float zMax = -base.z;
+        const float coef = (zMax / (distMax * distMax)) * branchsWeight;
+
+        for(size_t i = 0 ; i < skeleton.size() ; i++)
+        {
+            const float distXY = sqrt(pow(skeleton[i].x - base.x, 2) + pow(skeleton[i].y - base.y, 2));
+            const float deltaZ = coef * (distXY * distXY);
+
+            skeleton[i].z += deltaZ;
+
+            for(size_t j = 0 ; j < circles[i].vertices.size() ; j++)
+            {
+                circles[i].vertices[j].z += deltaZ;
+            }
         }
 
         for(size_t i = 0 ; i < circles.size()-1 ; i++)

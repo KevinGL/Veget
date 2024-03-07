@@ -215,18 +215,24 @@ namespace Veget
             }
 
             else
-            if(line.find("\"branchsCurve\"") != std::string::npos)
+            if(line.find("\"branchsWeigth\"") != std::string::npos)
             {
-                p.branchsCurve = trim(line);
+                std::string branchsWeigth = trim(line);
 
-                p.branchsCurve.erase(0, p.branchsCurve.find(":") + 2);
-                p.branchsCurve.erase(p.branchsCurve.rfind("\""));
+                branchsWeigth.erase(0, branchsWeigth.find(":") + 1);
+
+                if(branchsWeigth.rfind(",") != std::string::npos)
+                {
+                    branchsWeigth.erase(branchsWeigth.rfind(","));
+                }
+
+                p.branchsWeigth = atof(branchsWeigth.c_str());
             }
 
             else
             if(line.find("\"leavesSize\"") != std::string::npos)
             {
-               std::string lSize = trim(line);
+                std::string lSize = trim(line);
 
                 lSize.erase(0, lSize.find(":") + 1);
 
