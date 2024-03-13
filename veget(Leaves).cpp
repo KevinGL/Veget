@@ -5,16 +5,22 @@
 
 namespace Veget
 {
-    void VegetGenerator::createLeaves(std::vector<glm::vec3> skeleton, const float branchRadius, const float leavesSize, const glm::mat4 rotZ, VertexBuffer *model)
+    void VegetGenerator::createLeaves(std::vector<glm::vec3> skeleton, const float ratioLeavesBranch, const glm::mat4 rotZ, const glm::mat4 rotY, VertexBuffer *model)
     {
-        const float size = 12 * leavesSize * branchRadius;
+        float size;
 
-        for(const glm::vec3 v : skeleton)
+        for(size_t i = 0 ; i < skeleton.size() ; i++)
         {
             const float angleX = rand() % 360;
             const glm::mat4 rotX = glm::rotate(angleX, 1.0f, 0.0f, 0.0f);
+            const glm::vec3 v = skeleton[i];
 
-            glm::vec4 v4 = rotX * rotZ * glm::vec4(-size/2, 0.0f, 0.0f, 1.0f);
+            if(i < skeleton.size()-1)
+            {
+                size = glm::length(skeleton[i+1] - skeleton[i]) * ratioLeavesBranch;
+            }
+
+            glm::vec4 v4 = rotX * rotY * rotZ * glm::vec4(-size/2, 0.0f, 0.0f, 1.0f);
             model->coordVert.push_back(v.x + v4.x);
             model->coordVert.push_back(v.y + v4.y);
             model->coordVert.push_back(v.z + v4.z);

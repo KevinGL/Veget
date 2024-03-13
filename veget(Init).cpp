@@ -122,7 +122,7 @@ namespace Veget
             }
 
             else
-            if(line.find("\"ratioTopBottom\"") != std::string::npos)
+            if(line.find("\"ratioTopBottomTrunk\"") != std::string::npos)
             {
                 std::string ratio = trim(line);
 
@@ -133,7 +133,22 @@ namespace Veget
                     ratio.erase(ratio.rfind(","));
                 }
 
-                p.ratioTopBottom = atof(ratio.c_str());
+                p.ratioTopBottomTrunk = atof(ratio.c_str());
+            }
+
+            else
+            if(line.find("\"ratioTopBottomBranch\"") != std::string::npos)
+            {
+                std::string ratio = trim(line);
+
+                ratio.erase(0, ratio.find(":") + 1);
+
+                if(ratio.rfind(",") != std::string::npos)
+                {
+                    ratio.erase(ratio.rfind(","));
+                }
+
+                p.ratioTopBottomBranch = atof(ratio.c_str());
             }
 
             else
@@ -230,18 +245,18 @@ namespace Veget
             }
 
             else
-            if(line.find("\"leavesSize\"") != std::string::npos)
+            if(line.find("\"ratioLeavesBranch\"") != std::string::npos)
             {
-                std::string lSize = trim(line);
+                std::string ratioLeavesBranch = trim(line);
 
-                lSize.erase(0, lSize.find(":") + 1);
+                ratioLeavesBranch.erase(0, ratioLeavesBranch.find(":") + 1);
 
-                if(lSize.rfind(",") != std::string::npos)
+                if(ratioLeavesBranch.rfind(",") != std::string::npos)
                 {
-                    lSize.erase(lSize.rfind(","));
+                    ratioLeavesBranch.erase(ratioLeavesBranch.rfind(","));
                 }
 
-                p.leavesSize = atof(lSize.c_str());
+                p.ratioLeavesBranch = atof(ratioLeavesBranch.c_str());
             }
 
             else
@@ -565,13 +580,13 @@ namespace Veget
     {
         const float height = (rand() % ((int)params[specie].heightMax - (int)params[specie].heightMin + 1) + (int)params[specie].heightMin) / 100.0f;
         const float trunkDiameter = (rand() % (params[specie].radiusMax - params[specie].radiusMin + 1) + params[specie].radiusMin) / 100.0f;
-        const float ratioTopBottom = params[specie].ratioTopBottom;
+        const float ratioTopBottomTrunk = params[specie].ratioTopBottomTrunk;
         const unsigned int torsion = params[specie].torsion;
 
         *trunkRadius = trunkDiameter/2;
 
         const float bottomDiameter = trunkDiameter;
-        const float topDiameter = bottomDiameter * ratioTopBottom;
+        const float topDiameter = bottomDiameter * ratioTopBottomTrunk;
         const float segHeight = height / nbSeg;
 
         std::vector<Circle> circles;

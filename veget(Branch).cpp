@@ -10,9 +10,9 @@ namespace Veget
     {
         const float beginBranch = params[specie].beginBranch;
         const float angleBranch = params[specie].angleBranch;
-        const float ratioTopBottom = params[specie].ratioTopBottom;
+        const float ratioTopBottomBranch = params[specie].ratioTopBottomBranch;
         const float branchsWeigth = params[specie].branchsWeigth;
-        float leavesSize = params[specie].leavesSize;
+        float ratioLeavesBranch = params[specie].ratioLeavesBranch;
         const int torsion = params[specie].torsionBranchs;
 
         std::vector<glm::vec3> baseBranchs;
@@ -59,8 +59,6 @@ namespace Veget
         const float htMax = baseBranchs[baseBranchs.size()-1].z;
         const float htMed = (htMin + htMax) / 2;
 
-        const float leavesSizeInit = leavesSize;
-
         for(const glm::vec3 base : baseBranchs)
         {
             const float angleZ = rand() % 360;
@@ -70,7 +68,7 @@ namespace Veget
 
             if(shape == "RECT")
             {
-                const float lgMin = 0.5f * lgMax;
+                /*const float lgMin = 0.5f * lgMax;
 
                 if(index <= baseBranchs.size() / 4)
                 {
@@ -90,16 +88,16 @@ namespace Veget
                     const float coef = -(lgMax - lgMin) / (baseBranchs.size() / 4);
                     const float ord = -coef * baseBranchs.size() + lgMin;
                     lg = coef * index + ord;
-                }
+                }*/
+
+                lg = lgMax;
             }
 
             else
             if(shape == "SPHERE")
             {
-                const float lgMin = 0.5f * lgMax;
-
                 const float deltaZ = fabs(base.z - htMed);
-                const float radius = (htMax - htMin) / 2;
+                const float radius = fabs(htMax - htMed);
 
                 lg = sqrt(pow(radius, 2) - pow(deltaZ, 2));
             }
@@ -107,8 +105,6 @@ namespace Veget
             else
             if(shape == "SEMISPHERE")
             {
-                const float lgMin = 0.5f * lgMax;
-
                 const float deltaZ = fabs(base.z - htMin);
                 const float radius = htMax - htMin;
 
@@ -139,7 +135,6 @@ namespace Veget
                     const float amp = lgMax;
 
                     lg = amp * sin(pulsation * base.z + phase);
-                    leavesSize = leavesSizeInit * sin(pulsation * base.z + phase);
 
                     if(lg < 0)
                     {
@@ -157,7 +152,6 @@ namespace Veget
                     const float phase = asin(lgMax / amp) - pulsation * htInterm;
 
                     lg = amp * sin(pulsation * base.z + phase);
-                    leavesSize = leavesSizeInit * sin(pulsation * base.z + phase);
 
                     if(lg < 0)
                     {
@@ -168,13 +162,13 @@ namespace Veget
                 }
             }
 
-            createBranch(branchsWeigth, leavesSize, torsion, base, trunkRadius * ratioBranchTrunkRadius, ratioTopBottom, lg, angleZ, angleY, model);
+            createBranch(branchsWeigth, ratioLeavesBranch, torsion, base, trunkRadius * ratioBranchTrunkRadius, ratioTopBottomBranch, lg, angleZ, angleY, model);
 
             index++;
         }
     }
 
-    void VegetGenerator::createBranch(const float branchsWeight, const float leavesSize, const int torsion, const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
+    void VegetGenerator::createBranch(const float branchsWeight, const float ratioLeavesBranch, const int torsion, const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model)
     {
         const float bottomDiameter = 2 * radius;
         const float topDiameter = bottomDiameter * ratioTopBottom;
@@ -389,7 +383,7 @@ namespace Veget
             }
         }
 
-        createLeaves(skeleton, radius, leavesSize, rotationZ, model);
+        createLeaves(skeleton, ratioLeavesBranch, rotationZ, rotationY, model);
     }
 
     float VegetGenerator::getCurve(const std::string curve, const size_t index, const float zBase)

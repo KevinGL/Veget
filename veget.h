@@ -46,15 +46,16 @@ namespace Veget
         unsigned int heightMax;
         unsigned int radiusMin;
         unsigned int radiusMax;
-        float ratioTopBottom;
+        float ratioTopBottomTrunk;
+        float ratioTopBottomBranch;
         float ratioBranchTrunkRadius;
         float ratioBranchTrunkLength;
+        float ratioLeavesBranch;
         std::string texKey;
         float beginBranch;
         float angleBranch;
         std::string shape;
         float branchsWeigth;
-        float leavesSize;
         unsigned int torsion;
         unsigned int torsionBranchs;
         bool multiTrunk;
@@ -127,8 +128,8 @@ namespace Veget
         std::vector<float> getScalesFromSpecie(const std::string specie);
         void createTrunk(const std::string specie, std::vector<glm::vec3> &skeleton, float *trunkRadius, VertexBuffer *model);
         void createBranchs(const std::string specie, std::vector<glm::vec3> skeleton, const float trunkRadius, VertexBuffer *model);
-        void createBranch(const float branchsWeight, const float leavesSize, const int torsion, const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model);
-        void createLeaves(const std::vector<glm::vec3> skeleton, const float branchRadius, const float leavesSize, const glm::mat4 rotZ, VertexBuffer *model);
+        void createBranch(const float branchsWeight, const float ratioLeavesBranch, const int torsion, const glm::vec3 base, const float radius, const float ratioTopBottom, const float lg, const float angleZ, const float angleY, VertexBuffer *model);
+        void createLeaves(const std::vector<glm::vec3> skeleton, const float ratioLeavesBranch, const glm::mat4 rotZ, const glm::mat4 rotY, VertexBuffer *model);
         void createGrass(VertexBuffer *model);
         float getCurve(const std::string curve, const size_t index, const float zBase);
 
